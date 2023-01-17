@@ -1,0 +1,65 @@
+Net Status Report
+Filename     : C:\Users\dawso\OneDrive - University of Waterloo\4A\MTE481 - FYDP\LV Controller\PCB_Project\lv_controller.PcbDoc
+Date         : 2022-11-29
+Time         : 10:16:27 PM
+Time Elapsed : 00:00:00
+
+Nets, Layer, Length
+    +3V3, Signal Layers Only, 0mils
+    +5, Signal Layers Only, 0mils
+    GND, Signal Layers Only, 0mils
+    GPIO17, Signal Layers Only, 0mils
+    GPIO18, Signal Layers Only, 0mils
+    GPIO21, Signal Layers Only, 0mils
+    GPIO33, Signal Layers Only, 0mils
+    GPIO34, Signal Layers Only, 0mils
+    GPIO35, Signal Layers Only, 0mils
+    GPIO36, Signal Layers Only, 0mils
+    GPIO45, Signal Layers Only, 0mils
+    GPIO46, Signal Layers Only, 0mils
+    HSU_RX, Signal Layers Only, 0mils
+    HSU_TX, Signal Layers Only, 0mils
+    LIM_SW_1, Signal Layers Only, 0mils
+    LIM_SW_2, Signal Layers Only, 0mils
+    LIM_SW_3, Signal Layers Only, 0mils
+    LIM_SW_4, Signal Layers Only, 0mils
+    MCU_BOOT, Signal Layers Only, 0mils
+    MCU_EN, Signal Layers Only, 0mils
+    NetC18_2, Signal Layers Only, 0mils
+    NetC19_2, Signal Layers Only, 0mils
+    NetC20_2, Signal Layers Only, 0mils
+    NetC24_2, Signal Layers Only, 0mils
+    NetC25_2, Signal Layers Only, 0mils
+    NetC26_2, Signal Layers Only, 0mils
+    NetC4_1, Signal Layers Only, 0mils
+    NetF1_2, Signal Layers Only, 0mils
+    NetF2_2, Signal Layers Only, 0mils
+    NetL5_1, Signal Layers Only, 0mils
+    NetR10_2, Signal Layers Only, 0mils
+    NetR11_1, Signal Layers Only, 0mils
+    NetR12_1, Signal Layers Only, 0mils
+    NetR4_2, Signal Layers Only, 0mils
+    NetR7_2, Signal Layers Only, 0mils
+    NetR8_1, Signal Layers Only, 0mils
+    NetR9_1, Signal Layers Only, 0mils
+    NetU1_12, Signal Layers Only, 0mils
+    NetU1_15, Signal Layers Only, 0mils
+    NetU1_17, Signal Layers Only, 0mils
+    NetU1_18, Signal Layers Only, 0mils
+    NetU1_19, Signal Layers Only, 0mils
+    NetU1_20, Signal Layers Only, 0mils
+    NetU1_34, Signal Layers Only, 0mils
+    NetU1_35, Signal Layers Only, 0mils
+    NetU1_4, Signal Layers Only, 0mils
+    NetU1_5, Signal Layers Only, 0mils
+    NetU1_6, Signal Layers Only, 0mils
+    NetU1_7, Signal Layers Only, 0mils
+    RING_LIGHT_DI_3V3, Signal Layers Only, 0mils
+    RING_LIGHT_DI_5V, Signal Layers Only, 0mils
+    SOLENOID_N, Signal Layers Only, 0mils
+    SOLENOID_P, Signal Layers Only, 0mils
+    SOLENOID_UNLOCK_HIGH, Signal Layers Only, 0mils
+    USB_D_N, Signal Layers Only, 0mils
+    USB_D_P, Signal Layers Only, 0mils
+    VBUS, Signal Layers Only, 0mils
+count : 57
