@@ -1,0 +1,2 @@
+Removed Pin From Net: NetName=FanCtrl Pin=U4-21
+Added Pin To Net: NetName=FanCtrl Pin=U4-12

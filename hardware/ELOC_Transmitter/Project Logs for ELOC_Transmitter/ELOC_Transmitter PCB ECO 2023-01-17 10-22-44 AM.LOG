@@ -1,0 +1,13 @@
+Removed Pin From Net: NetName=+12 Pin=C14-2
+Removed Pin From Net: NetName=+12 Pin=C15-2
+Removed Pin From Net: NetName=+12 Pin=IC3-3
+Removed Pin From Net: NetName=+12 Pin=L1-1
+Added Pin To Net: NetName=+24 Pin=Q1-4
+Added Pin To Net: NetName=+24 Pin=Q2-4
+Added Pin To Net: NetName=Shunt- Pin=C14-2
+Added Pin To Net: NetName=Shunt- Pin=C15-2
+Added Pin To Net: NetName=Shunt- Pin=IC3-3
+Added Pin To Net: NetName=Shunt- Pin=L1-1
+Added Pin To Net: NetName=Shunt- Pin=R15-2
+Added Pin To Net: NetName=Shunt- Pin=U2-4
+Added Net: Name=Shunt-

@@ -1,0 +1,3 @@
+Record=TopLevelDocument|FileName=Full_Bridge_Inverter.SchDoc|SheetNumber=1
+Record=NoMainPathDocument|SourceDocument=Full_Bridge_Inverter.SchDoc|FileName=Power.SchDoc|SheetNumber=2
+Record=NoMainPathDocument|SourceDocument=Full_Bridge_Inverter.SchDoc|FileName=Processor.SchDoc|SheetNumber=3
