@@ -1,7 +1,7 @@
 Protel Design System Design Rule Check
-PCB File : D:\Documents\OneDrive - University of Waterloo\Fourth Year\FYDP\Electrical Designs\ELOC_Receiver\ELOC_Receiver.PcbDoc
-Date     : 2023-01-16
-Time     : 10:44:22 PM
+PCB File : C:\Users\dawso\OneDrive - University of Waterloo\4B\MTE 482 - FYDP Pt 2\ELOC\hardware\ELOC_Receiver\ELOC_Receiver.PcbDoc
+Date     : 2023-01-18
+Time     : 7:00:41 PM
 
 Processing Rule : Clearance Constraint (Gap=5mil) (All),(All)
    Violation between Clearance Constraint: (6.835mil < 9.842mil) Between Hole of Pad J3-17(4421.221mil,2004.913mil) on Multi-Layer And Pad J3-A1-B12(4409.016mil,2047.236mil) on Top Layer 
@@ -126,4 +126,4 @@ Rule Violations :0
 
 Violations Detected : 72
 Waived Violations : 0
-Time Elapsed        : 00:00:02
+Time Elapsed        : 00:00:03

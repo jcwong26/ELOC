@@ -1,7 +1,7 @@
 Protel Design System Design Rule Check
-PCB File : C:\Users\dawso\OneDrive - University of Waterloo\4A\MTE481 - FYDP\LV Controller\PCB_Project\lv_controller.PcbDoc
-Date     : 2023-01-18
-Time     : 6:25:31 PM
+PCB File : C:\Users\Dawson Kletke\OneDrive - University of Waterloo (1)\4A\MTE481 - FYDP\LV Controller\PCB_Project\lv_controller.PcbDoc
+Date     : 2023-01-19
+Time     : 11:57:55 AM
 
 Processing Rule : Clearance Constraint (Gap=5mil) (All),(All)
    Violation between Clearance Constraint: (6.894mil < 9.842mil) Between Hole of Pad J1-(264.882mil,1886.22mil) on Multi-Layer And Pad J1-B1_A12(307.205mil,1874.016mil) on Top Layer 
@@ -66,4 +66,4 @@ Rule Violations :0
 
 Violations Detected : 12
 Waived Violations : 0
-Time Elapsed        : 00:00:06
+Time Elapsed        : 00:00:03
