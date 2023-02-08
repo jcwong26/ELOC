@@ -1,20 +1,10 @@
 #include <stdio.h>
 #include "driver/gpio.h"
+#include "driver/ledc.h"
+#include "esp_log.h"
 
-
-
-// Pin defs
-
-#define CURR_SENSE_PIN 5
-#define V_INV_SENSE_PIN 6
-#define V_INV_ENABLE_PIN 15
-#define FAN_CTRL_PIN 8
-#define BRIDGE_CTRL_PIN 10
-#define NOT_SHUTDOWN_PIN 11
-#define WPT_ACTIVE_LED_PIN 12
-
-#define V_DIV_RATIO 0.0507614
-#define MAX_ADC_OUTPUT 4095
+#include "inverter.h"
+#include "v_sense.h"
 
 
 void setup_gpio(void){
@@ -29,10 +19,14 @@ void setup_gpio(void){
     gpio_set_direction(BRIDGE_CTRL_PIN, GPIO_MODE_OUTPUT);
     gpio_set_direction(NOT_SHUTDOWN_PIN, GPIO_MODE_OUTPUT);
     gpio_set_direction(WPT_ACTIVE_LED_PIN, GPIO_MODE_OUTPUT);
+
+    gpio_set_level(WPT_ACTIVE_LED_PIN, 1); // This turns off the LED
 }
 
 void app_main(void)
 {
     setup_gpio();
+    init_inverter();
+    turn_on_inv_rail();
 
 }
