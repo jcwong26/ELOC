@@ -13,7 +13,7 @@ ledc_channel_config_t ledc_channel = {
     .timer_sel      = LEDC_TIMER,
     .intr_type      = LEDC_INTR_DISABLE,
     .gpio_num       = BRIDGE_CTRL_PIN,
-    // .duty           = LEDC_DUTY, // Set duty to 100%
+    .duty           = LEDC_DUTY, // Set duty to 100%
     .hpoint         = 0
 };
 

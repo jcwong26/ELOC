@@ -11,7 +11,7 @@
 #define LEDC_TIMER              LEDC_TIMER_0
 #define LEDC_MODE               LEDC_LOW_SPEED_MODE
 #define LEDC_DUTY_RES           LEDC_TIMER_1_BIT // Set duty resolution to 8 bits
-// #define LEDC_DUTY               (1) // Set duty to 100%
+#define LEDC_DUTY               (1) // Set duty to 100%
 #define LEDC_FREQUENCY          DEFAULT_SW_FREQ // Frequency in Hertz. Set frequency at 100 kHz
 
 void init_inverter(void);
