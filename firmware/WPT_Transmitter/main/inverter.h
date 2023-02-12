@@ -22,3 +22,5 @@ void enable_bridge(void);
 void disable_bridge(void);
 void turn_fan_on(void);
 void turn_fan_off(void);
+
+void flash_wpt_led(void*);

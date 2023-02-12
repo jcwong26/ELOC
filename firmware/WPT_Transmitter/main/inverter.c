@@ -2,6 +2,9 @@
 #include "driver/ledc.h"
 #include "esp_log.h"
 
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+
 #include "inverter.h"
 
 ledc_channel_config_t ledc_channel = {
@@ -65,4 +68,13 @@ void turn_fan_on(void){
 
 void turn_fan_off(void){
     gpio_set_level(FAN_CTRL_PIN, 0);
+}
+
+void flash_wpt_led(void*){
+    static bool state = true;
+    while(1){
+        gpio_set_level(WPT_ACTIVE_LED_PIN, state);
+        state = !state;
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }
 }

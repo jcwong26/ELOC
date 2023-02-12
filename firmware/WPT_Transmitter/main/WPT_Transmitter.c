@@ -2,6 +2,8 @@
 #include "driver/gpio.h"
 #include "driver/ledc.h"
 #include "esp_log.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 
 #include "inverter.h"
 #include "v_sense.h"
@@ -28,5 +30,8 @@ void app_main(void)
     setup_gpio();
     init_inverter();
     turn_on_inv_rail();
+    printf("Setup Completed. Inverter Should be on");
+
+    xTaskCreate(flash_wpt_led, "LED_blink_Task", 2500, NULL, 2, NULL);
 
 }
