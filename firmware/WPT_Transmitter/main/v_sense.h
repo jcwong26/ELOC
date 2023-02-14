@@ -9,6 +9,10 @@
 #define MAX_ADC_OUTPUT 4095
 
 #define V_TO_I_SHUNT(volts) ((volts/V_PER_V_INV)/R_SHUNT_OHMS)
+#define CONVERT_V24(volts) (volts/V_24V_DIV_RATIO)
+
+#define ADC_CONV_MODE           ADC_CONV_SINGLE_UNIT_1
+#define ADC_OUTPUT_TYPE         ADC_DIGI_OUTPUT_FORMAT_TYPE1
 
 void init_adcs(void);
 
