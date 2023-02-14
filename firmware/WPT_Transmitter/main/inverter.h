@@ -6,7 +6,7 @@
 
 // Inverter Definitions
 #define MAX_INV_CURRENT_AMPS 5.0        // TODO: Change this to something higher once it all works
-#define DEFAULT_SW_FREQ 100E3       // Default 100 kHz Switching Freq
+#define DEFAULT_SW_FREQ 201E3       // Default 100 kHz Switching Freq
 //      Inverter Timer
 #define LEDC_TIMER              LEDC_TIMER_0
 #define LEDC_MODE               LEDC_LOW_SPEED_MODE
