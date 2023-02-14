@@ -14,6 +14,9 @@
 #define ADC_CONV_MODE           ADC_CONV_SINGLE_UNIT_1
 #define ADC_OUTPUT_TYPE         ADC_DIGI_OUTPUT_FORMAT_TYPE1
 
+#define V_24V_CHANNEL ADC_CHANNEL_5
+#define I_SENSE_CHANNEL ADC_CHANNEL_4
+
 void init_adcs(void);
 
 void current_monitoring_task(void*);
