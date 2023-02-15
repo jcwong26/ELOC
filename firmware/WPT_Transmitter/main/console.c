@@ -7,20 +7,80 @@ static int cmd_set_freq(int argc, char **argv) {
     if(argc == 2) {
         set_sw_freq(atof(argv[1])*1000);
     } else {
-        printf("Invalid Usage.");
-        return ESP_ERR_INVALID_ARG;
+        printf("Invalid Usage. Usage: setFreq <freq_kHz>\n");
+        // return ESP_ERR_INVALID_ARG;
     }
     return ESP_OK;
 }
 
+static int cmd_enable_bridge(int argc, char **argv) {
+    enable_bridge();
+    printf("Inverter Output Enabled\n");
+    return ESP_OK;
+}
+
+static int cmd_disable_bridge(int argc, char **argv) {
+    disable_bridge();
+    printf("Inverter Output Disabled\n");
+    return ESP_OK;
+}
+
+static int cmd_turn_fan_on(int argc, char **argv) {
+    turn_fan_on();
+    printf("Fan On\n");
+    return ESP_OK;
+}
+
+static int cmd_turn_fan_off(int argc, char **argv) {
+    turn_fan_off();
+    printf("Fan Off\n");
+    return ESP_OK;
+}
+
+
 void register_commands(void){
+    // Set Switching frequency Command
     const esp_console_cmd_t set_freq_cmd = {
         .command = "setFreq",
-        .help = "Set's Inverter Switching Frequency in kHz",
-        .hint = NULL,
+        .help = "Sets Inverter Switching Frequency in kHz",
+        .hint = "<freq_kHz>",
         .func = cmd_set_freq,
     };
     ESP_ERROR_CHECK(esp_console_cmd_register(&set_freq_cmd));
+
+    const esp_console_cmd_t enable_bridge_cmd = {
+        .command = "enableBridge",
+        .help = "Enabled the Inverter Output",
+        .hint = NULL,
+        .func = cmd_enable_bridge,
+    };
+    ESP_ERROR_CHECK(esp_console_cmd_register(&enable_bridge_cmd));
+
+    const esp_console_cmd_t disable_bridge_cmd = {
+        .command = "disableBridge",
+        .help = "Disable the Inverter Output",
+        .hint = NULL,
+        .func = cmd_disable_bridge,
+    };
+    ESP_ERROR_CHECK(esp_console_cmd_register(&disable_bridge_cmd));
+
+    const esp_console_cmd_t turn_fan_on_cmd = {
+        .command = "turnFanOn",
+        .help = "Turn Cooling Fan On",
+        .hint = NULL,
+        .func = cmd_turn_fan_on,
+    };
+    ESP_ERROR_CHECK(esp_console_cmd_register(&turn_fan_on_cmd));
+
+    const esp_console_cmd_t turn_fan_off_cmd = {
+        .command = "turnFanOff",
+        .help = "Turn Cooling Fan Off",
+        .hint = NULL,
+        .func = cmd_turn_fan_off,
+    };
+    ESP_ERROR_CHECK(esp_console_cmd_register(&turn_fan_off_cmd));
+
+
 }
 
 
@@ -58,6 +118,8 @@ void initialize_console(void)
     ESP_ERROR_CHECK( esp_console_init(&console_config) );
 
     register_commands();
+
+    esp_console_register_help_command();
 
 
     /* Configure linenoise line completion library */
