@@ -46,10 +46,8 @@ void turn_off_inv_rail(void){
 }
 
 void set_sw_freq(uint32_t f_sw){
-    ESP_ERROR_CHECK(ledc_set_freq(LEDC_MODE, LEDC_CHANNEL_0, f_sw));
-    // Update duty to apply the new value
-    // ESP_ERROR_CHECK(ledc_set_duty(LEDC_MODE, LEDC_CHANNEL_0, f_sw));
-    // ESP_ERROR_CHECK(ledc_update_duty(LEDC_MODE, LEDC_CHANNEL_0));
+    printf("Setting Frequency to %.1f kHz\n", (f_sw/1000.0));
+    ledc_set_freq(LEDC_MODE, LEDC_CHANNEL_0, f_sw);
 }
 
 void enable_bridge(void){
@@ -74,16 +72,10 @@ void turn_fan_off(void){
 
 void flash_wpt_led(void*){
     static bool state = true;
-    uint32_t freq = 100E3;
-    uint32_t max_freq = 1000E3;
     while(1){
         gpio_set_level(WPT_ACTIVE_LED_PIN, state);
         state = !state;
-        set_sw_freq(freq);
-        ESP_LOGI("INV", "Set Inv to: %lu Hz", freq);
-
-        freq = (freq % max_freq) + 50E3;
         
-        vTaskDelay(pdMS_TO_TICKS(2000));
+        vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }

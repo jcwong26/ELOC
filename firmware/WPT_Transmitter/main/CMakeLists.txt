@@ -3,5 +3,6 @@ idf_component_register(
         "WPT_Transmitter.c"
         "inverter.c"
         "v_sense.c"
+        "console.c"
                     
     INCLUDE_DIRS ".")

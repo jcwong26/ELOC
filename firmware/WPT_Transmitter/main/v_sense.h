@@ -27,5 +27,4 @@ void calibrate_adc(void);
 int convert_to_cal_mV(uint16_t raw_value);
 
 void poll_adc_task(void*);
-void current_monitoring_task(void*);
-void supply_voltage_monitor_task(void*);
+void power_monitoring_task(void*);

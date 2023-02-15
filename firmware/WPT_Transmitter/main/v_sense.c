@@ -3,6 +3,8 @@
 #include "sdkconfig.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "freertos/queue.h"
+
 #include "esp_log.h"
 #include "esp_err.h"
 
@@ -13,11 +15,13 @@
 static adc_continuous_handle_t handle = NULL;
 static adc_cali_handle_t calib_handle = NULL;
 
+static QueueHandle_t current_queue = NULL;
+static QueueHandle_t voltage_queue = NULL;
+
 static bool check_valid_data(const adc_digi_output_data_t *data){
     if (data->type1.channel >= SOC_ADC_CHANNEL_NUM(ADC_UNIT_1)) {
         return false;
     }
-
     return true;
 }
 
@@ -35,9 +39,6 @@ void init_adc(void){
         .format = ADC_OUTPUT_TYPE
     };
 
-    // https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/adc_continuous.html
-    // https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/adc_oneshot.html#_CPPv4N25adc_digi_pattern_config_t4unitE
-
     adc_digi_pattern_config_t adc_pattern[SOC_ADC_PATT_LEN_MAX] = {0};
     dig_cfg.pattern_num = 2;   // 2 ADC Channels will be used
 
@@ -54,11 +55,8 @@ void init_adc(void){
     adc_pattern[1].bit_width = SOC_ADC_DIGI_MAX_BITWIDTH;
 
     dig_cfg.adc_pattern = adc_pattern;
-    ESP_ERROR_CHECK(adc_continuous_config(handle, &dig_cfg));        // Fails here it looks like
-
+    ESP_ERROR_CHECK(adc_continuous_config(handle, &dig_cfg));  
     ESP_ERROR_CHECK(adc_continuous_start(handle));
-    
-
     ESP_LOGI("ADC", "ADC Started Successfully!");
 }
 
@@ -82,7 +80,7 @@ int convert_to_cal_mV(uint16_t raw_value){
     return result_mV;
 }
 
-void current_monitoring_task(void*){
+void power_monitoring_task(void*){
     // Setup queue or something here
     ESP_LOGI("ADC","test");
 }
@@ -93,24 +91,19 @@ void poll_adc_task(void*){
     uint32_t ret_num = 0;
     esp_err_t ret;
     while (1){
-
         ret = adc_continuous_read(handle, result, FRAME_SIZE, &ret_num, 0);
-
         if (ret == ESP_OK) {
-        ESP_LOGI("TASK", "ret is %x, ret_num is %"PRIu32, ret, ret_num);
         // Just get last 2 conversion results
-
-        for (int i = ret_num-(2*SOC_ADC_DIGI_RESULT_BYTES); i < ret_num; i += SOC_ADC_DIGI_RESULT_BYTES) {
-            adc_digi_output_data_t *p = (void*)&result[i];
-            if (check_valid_data(p)) {
-                ESP_LOGI("ADC", "Unit: %d, Channel: %d, Value: %x, Voltage: %.2fV", 1, p->type1.channel, p->type1.data, VAL_TO_VOLTS(p->type1.data));
+            for (int i = ret_num-(2*SOC_ADC_DIGI_RESULT_BYTES); i < ret_num; i += SOC_ADC_DIGI_RESULT_BYTES) {
+                adc_digi_output_data_t *p = (void*)&result[i];
+                if (check_valid_data(p)) {
+                    ESP_LOGI("ADC", "Unit: %d, Channel: %d, Value: %x, Voltage: %.2fV", 1, p->type1.channel, p->type1.data, VAL_TO_VOLTS(p->type1.data));
                 } else {
-                ESP_LOGI("ADC", "Invalid data");
+                    ESP_LOGI("ADC", "Invalid data");
                 }
             }
         }
 
-        // ESP_LOGI("ADC", "24V Rail Voltage: %.2fV", CONVERT_V24(voltage));
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
