@@ -5,62 +5,112 @@
 #include "freertos/task.h"
 #include "esp_log.h"
 #include "esp_err.h"
+
 #include "esp_adc/adc_continuous.h"
+#include "esp_adc/adc_cali.h"
+#include "esp_adc/adc_cali_scheme.h"
 
+static adc_continuous_handle_t handle = NULL;
+static adc_cali_handle_t calib_handle = NULL;
 
-void init_adcs(void){
-    adc_continuous_handle_t handle = NULL;
+static bool check_valid_data(const adc_digi_output_data_t *data){
+    if (data->type1.channel >= SOC_ADC_CHANNEL_NUM(ADC_UNIT_1)) {
+        return false;
+    }
+
+    return true;
+}
+
+void init_adc(void){
     
     adc_continuous_handle_cfg_t adc_config = {
         .max_store_buf_size = 1024,
-        .conv_frame_size = 100,
+        .conv_frame_size = FRAME_SIZE,
     };
     ESP_ERROR_CHECK(adc_continuous_new_handle(&adc_config, &handle));
 
     adc_continuous_config_t dig_cfg = {
-        .sample_freq_hz = 20E3, // 20K is lowest sampling freq
+        .sample_freq_hz = 20 * 1000, // 20K is lowest sampling freq
         .conv_mode = ADC_CONV_MODE,
-        .format = ADC_OUTPUT_TYPE, 
-        .pattern_num = 2,   // 2 ADC Channels will be used
+        .format = ADC_OUTPUT_TYPE
     };
 
     // https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/adc_continuous.html
     // https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/adc_oneshot.html#_CPPv4N25adc_digi_pattern_config_t4unitE
 
     adc_digi_pattern_config_t adc_pattern[SOC_ADC_PATT_LEN_MAX] = {0};
+    dig_cfg.pattern_num = 2;   // 2 ADC Channels will be used
 
     // Config I_Sense Input
-    adc_pattern[0].atten = ADC_ATTEN_DB_11;     // 0-2400mV
+    adc_pattern[0].atten = ADC1_ATTEN;     // 0-2400mV
     adc_pattern[0].channel = I_SENSE_CHANNEL;
     adc_pattern[0].unit = ADC_UNIT_1;
     adc_pattern[0].bit_width = SOC_ADC_DIGI_MAX_BITWIDTH;
 
     // Config 24V Sense Input
-    adc_pattern[1].atten = ADC_ATTEN_DB_6;      // 0 - 1300mV
+    adc_pattern[1].atten = ADC1_ATTEN;      //ADC_ATTEN_DB_6 is 0 - 1300mV
     adc_pattern[1].channel = V_24V_CHANNEL;
     adc_pattern[1].unit = ADC_UNIT_1;
     adc_pattern[1].bit_width = SOC_ADC_DIGI_MAX_BITWIDTH;
 
     dig_cfg.adc_pattern = adc_pattern;
+    ESP_ERROR_CHECK(adc_continuous_config(handle, &dig_cfg));        // Fails here it looks like
 
-    // ESP_ERROR_CHECK(adc_continuous_config(handle, &dig_cfg));
+    ESP_ERROR_CHECK(adc_continuous_start(handle));
+    
 
-    adc_continuous_config(handle, &dig_cfg);        // Fails here it looks like
-
-    ESP_LOGI("ADC", "ADC Configured Successfully!");
+    ESP_LOGI("ADC", "ADC Started Successfully!");
 }
 
+void calibrate_adc(void){
+    //Characterize ADC at particular atten
+    esp_err_t ret;
+    bool cali_enable = false;
+
+    ESP_LOGI("ADC", "calibration scheme version is %s", "Line Fitting");
+    adc_cali_line_fitting_config_t cali_config = {
+        .unit_id = ADC_UNIT_1,
+        .atten = ADC1_ATTEN,
+        .bitwidth = SOC_ADC_DIGI_MAX_BITWIDTH,
+    };
+    ESP_ERROR_CHECK(adc_cali_create_scheme_line_fitting(&cali_config, &calib_handle));
+    }
+
+int convert_to_cal_mV(uint16_t raw_value){
+    int result_mV = 0;
+    adc_cali_raw_to_voltage(calib_handle, raw_value, &result_mV);
+    return result_mV;
+}
 
 void current_monitoring_task(void*){
     // Setup queue or something here
     ESP_LOGI("ADC","test");
 }
 
-void supply_voltage_monitor_task(void*){
+void poll_adc_task(void*){
     // Setup Queue or something here
-    int voltage = 1.21;
+    uint8_t result[FRAME_SIZE] = {0};
+    uint32_t ret_num = 0;
+    esp_err_t ret;
     while (1){
-        ESP_LOGI("ADC", "24V Rail Voltage: %.2fV", CONVERT_V24(voltage));
+
+        ret = adc_continuous_read(handle, result, FRAME_SIZE, &ret_num, 0);
+
+        if (ret == ESP_OK) {
+        ESP_LOGI("TASK", "ret is %x, ret_num is %"PRIu32, ret, ret_num);
+        // Just get last 2 conversion results
+
+        for (int i = ret_num-(2*SOC_ADC_DIGI_RESULT_BYTES); i < ret_num; i += SOC_ADC_DIGI_RESULT_BYTES) {
+            adc_digi_output_data_t *p = (void*)&result[i];
+            if (check_valid_data(p)) {
+                ESP_LOGI("ADC", "Unit: %d, Channel: %d, Value: %x, Voltage: %.2fV", 1, p->type1.channel, p->type1.data, VAL_TO_VOLTS(p->type1.data));
+                } else {
+                ESP_LOGI("ADC", "Invalid data");
+                }
+            }
+        }
+
+        // ESP_LOGI("ADC", "24V Rail Voltage: %.2fV", CONVERT_V24(voltage));
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }

@@ -29,12 +29,14 @@ void app_main(void)
 {
     setup_gpio();
     init_inverter();
-    init_adcs();
+    calibrate_adc();
+    init_adc();
+    
     turn_on_inv_rail();
     // printf("Setup Completed. Inverter Should be on");
 
     set_sw_freq(100E3);
 
     xTaskCreate(flash_wpt_led, "LED_blink_Task", 2500, NULL, 2, NULL);
-    xTaskCreate(supply_voltage_monitor_task, "V_monitor_task", 2500, NULL, 2, NULL);
+    xTaskCreate(poll_adc_task, "V_monitor_task", 2500, NULL, 2, NULL);
 }
