@@ -1,4 +1,4 @@
-import cv2
+import cv2 #3.2.0 on BBB
 import cv2.aruco as aruco
 import numpy as np
 
@@ -14,7 +14,7 @@ parameters = aruco.DetectorParameters_create()
 
 img_counter=9
 
-camera = cv2.VideoCapture(1) # external webcam
+camera = cv2.VideoCapture(0) # external webcam
 while True:
     ret, frame = camera.read()
 # frame = cv2.imread("marker_detection/marker_0.png")
@@ -28,27 +28,27 @@ while True:
     corners, ids, rejected_img_points = aruco.detectMarkers(gray, cv2.aruco_dict,
                                                             parameters=parameters)
     if ids is not None and len(ids)>0:
-        rvec, tvec, markerPoints = aruco.estimatePoseSingleMarkers(corners, marker_length, 
-                                                                        cam_matrix,
-                                                                        dist_coeff)
+        rvec, tvec = aruco.estimatePoseSingleMarkers(corners, marker_length, cam_matrix, dist_coeff)
         tvec = tvec.ravel()
         x = tvec[0]
         y = tvec[1]
         z = tvec[2]
 
-        aruco.drawDetectedMarkers(frame, corners) 
+        print("Marker Location [x={}, y={}, z={}]".format(x,y,z), end="\r")
 
-        # Display marker coordinates on image
-        font = cv2.FONT_HERSHEY_SIMPLEX
-        cv2.putText(frame, 
-                    "x: {:.3f} y: {:.3f} z: {:.3f}".format(x, y, z), 
-                    (50, 50), 
-                    font, 0.5, 
-                    (0, 255, 255), 
-                    1, 
-                    cv2.LINE_4)
+        # aruco.drawDetectedMarkers(frame, corners) 
 
-    cv2.imshow("Marker test", frame)
+        # # Display marker coordinates on image
+        # font = cv2.FONT_HERSHEY_SIMPLEX
+        # cv2.putText(frame, 
+        #             "x: {:.3f} y: {:.3f} z: {:.3f}".format(x, y, z), 
+        #             (50, 50), 
+        #             font, 0.5, 
+        #             (0, 255, 255), 
+        #             1, 
+        #             cv2.LINE_4)
+
+    # cv2.imshow("Marker test", frame)
 
     k = cv2.waitKey(1)
     if k%256 == ord('q'): # quit program
