@@ -10,7 +10,9 @@
 #define V_24V_DIV_RATIO     0.0507614
 #define MAX_ADC_OUTPUT      4095
 
-#define VAL_TO_VOLTS(adc_val)   ((adc_val/4095.0)*2.50)
+#define ADC_CORRECTION_FACTOR 1.0652
+
+#define VAL_TO_VOLTS(adc_val)   ((adc_val/4095.0)*2.50)*ADC_CORRECTION_FACTOR
 #define V_TO_I_SHUNT(volts)     ((volts/V_PER_V_INV)/R_SHUNT_OHMS)
 #define CONVERT_V24(volts)      (volts/V_24V_DIV_RATIO)
 

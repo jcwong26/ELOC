@@ -79,3 +79,14 @@ void flash_wpt_led(void*){
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
+
+void sweep_sw_freq(void){
+
+    // Check if inverter is actually enabled first
+
+    for (uint32_t fsw = DEFAULT_SW_FREQ; fsw < MAX_SW_FREQ; fsw += 500;){
+        // set freq, print out voltage and current
+        set_sw_freq(fsw);
+        
+    }
+}

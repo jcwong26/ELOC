@@ -38,7 +38,7 @@ void app_main(void)
     // printf("Setup Completed. Inverter Should be on");
 
     xTaskCreate(flash_wpt_led, "LED_blink_Task", 2500, NULL, 2, NULL);
-    // xTaskCreate(poll_adc_task, "V_monitor_task", 2500, NULL, 2, NULL);
+    xTaskCreate(poll_adc_task, "V_monitor_task", 2500, NULL, 2, NULL);
 
     // Setup and start Console for user interaction
     initialize_nvs();

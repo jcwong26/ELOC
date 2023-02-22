@@ -97,7 +97,20 @@ void poll_adc_task(void*){
             for (int i = ret_num-(2*SOC_ADC_DIGI_RESULT_BYTES); i < ret_num; i += SOC_ADC_DIGI_RESULT_BYTES) {
                 adc_digi_output_data_t *p = (void*)&result[i];
                 if (check_valid_data(p)) {
-                    ESP_LOGI("ADC", "Unit: %d, Channel: %d, Value: %x, Voltage: %.2fV", 1, p->type1.channel, p->type1.data, VAL_TO_VOLTS(p->type1.data));
+                    switch (p->type1.channel)
+                    {
+                    case 4:     // Current Shunt Sensor
+                        ESP_LOGI("ADC", "12V Input Current: %.2fA", V_TO_I_SHUNT(VAL_TO_VOLTS(p->type1.data)));
+                        break;
+                    
+                    case 5:     // 24V bus sensor
+                        ESP_LOGI("ADC", "24V Bus Voltage: %.2fV", CONVERT_V24(VAL_TO_VOLTS(p->type1.data)));
+                        break; 
+
+                    default:
+                        break;
+                    }
+                    
                 } else {
                     ESP_LOGI("ADC", "Invalid data");
                 }
