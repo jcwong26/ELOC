@@ -13,6 +13,12 @@ static int cmd_set_freq(int argc, char **argv) {
     return ESP_OK;
 }
 
+static int cmd_sweep_freq(int argc, char **argv) {
+    sweep_sw_freq();
+    printf("Sweeping Switching Frequencies\n");
+    return ESP_OK;
+}
+
 static int cmd_enable_bridge(int argc, char **argv) {
     enable_bridge();
     printf("Inverter Output Enabled\n");
@@ -47,6 +53,14 @@ void register_commands(void){
         .func = cmd_set_freq,
     };
     ESP_ERROR_CHECK(esp_console_cmd_register(&set_freq_cmd));
+
+    const esp_console_cmd_t sweep_freq_cmd = {
+        .command = "sweepFreq",
+        .help = "Runs an automated sweep of switching frequencies",
+        .hint = NULL,
+        .func = cmd_sweep_freq,
+    };
+    ESP_ERROR_CHECK(esp_console_cmd_register(&sweep_freq_cmd));
 
     const esp_console_cmd_t enable_bridge_cmd = {
         .command = "enableBridge",

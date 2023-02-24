@@ -84,9 +84,9 @@ void sweep_sw_freq(void){
 
     // Check if inverter is actually enabled first
 
-    for (uint32_t fsw = DEFAULT_SW_FREQ; fsw < MAX_SW_FREQ; fsw += 500;){
+    for (uint32_t fsw = DEFAULT_SW_FREQ; fsw < MAX_SW_FREQ; fsw += 500){    // 400 kHz Difference, increment by 500Hz = 800 steps * 0.1s = 80 seconds
         // set freq, print out voltage and current
         set_sw_freq(fsw);
-        
+        vTaskDelay(pdMS_TO_TICKS(100));   
     }
 }

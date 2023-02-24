@@ -19,7 +19,7 @@
 #define ADC_CONV_MODE           ADC_CONV_SINGLE_UNIT_1
 #define ADC_OUTPUT_TYPE         ADC_DIGI_OUTPUT_FORMAT_TYPE1
 #define ADC1_ATTEN              ADC_ATTEN_DB_11     // 0-2400mV
-#define FRAME_SIZE              256
+#define FRAME_SIZE              2048
 
 #define V_24V_CHANNEL           ADC_CHANNEL_5
 #define I_SENSE_CHANNEL         ADC_CHANNEL_4

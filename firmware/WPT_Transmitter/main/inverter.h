@@ -21,6 +21,7 @@ void init_inverter(void);
 void turn_on_inv_rail(void);
 void turn_off_inv_rail(void);
 void set_sw_freq(uint32_t f_sw);
+void sweep_sw_freq(void);
 void enable_bridge(void);
 void disable_bridge(void);
 void turn_fan_on(void);

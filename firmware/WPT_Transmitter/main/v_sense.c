@@ -28,13 +28,13 @@ static bool check_valid_data(const adc_digi_output_data_t *data){
 void init_adc(void){
     
     adc_continuous_handle_cfg_t adc_config = {
-        .max_store_buf_size = 1024,
+        .max_store_buf_size = 2048,
         .conv_frame_size = FRAME_SIZE,
     };
     ESP_ERROR_CHECK(adc_continuous_new_handle(&adc_config, &handle));
 
     adc_continuous_config_t dig_cfg = {
-        .sample_freq_hz = 20 * 1000, // 20K is lowest sampling freq
+        .sample_freq_hz = 80 * 1000, // 20K is lowest sampling freq
         .conv_mode = ADC_CONV_MODE,
         .format = ADC_OUTPUT_TYPE
     };
@@ -89,22 +89,31 @@ void poll_adc_task(void*){
     // Setup Queue or something here
     uint8_t result[FRAME_SIZE] = {0};
     uint32_t ret_num = 0;
+    uint32_t I_sum = 0;
+    uint16_t I_count = 0;
+
+    uint32_t V_sum = 0;
+    uint16_t V_count = 0;
     esp_err_t ret;
     while (1){
         ret = adc_continuous_read(handle, result, FRAME_SIZE, &ret_num, 0);
         if (ret == ESP_OK) {
         // Just get last 2 conversion results
-            for (int i = ret_num-(2*SOC_ADC_DIGI_RESULT_BYTES); i < ret_num; i += SOC_ADC_DIGI_RESULT_BYTES) {
+            // for (int i = ret_num-(2*SOC_ADC_DIGI_RESULT_BYTES); i < ret_num; i += SOC_ADC_DIGI_RESULT_BYTES) {
+            for (int i = 0; i < ret_num; i += SOC_ADC_DIGI_RESULT_BYTES) {
                 adc_digi_output_data_t *p = (void*)&result[i];
                 if (check_valid_data(p)) {
                     switch (p->type1.channel)
                     {
                     case 4:     // Current Shunt Sensor
-                        ESP_LOGI("ADC", "12V Input Current: %.2fA", V_TO_I_SHUNT(VAL_TO_VOLTS(p->type1.data)));
+                        I_sum += p->type1.data;
+                        I_count++;
+                        
                         break;
                     
                     case 5:     // 24V bus sensor
-                        ESP_LOGI("ADC", "24V Bus Voltage: %.2fV", CONVERT_V24(VAL_TO_VOLTS(p->type1.data)));
+                        V_sum += p->type1.data;
+                        V_count++;
                         break; 
 
                     default:
@@ -115,6 +124,18 @@ void poll_adc_task(void*){
                     ESP_LOGI("ADC", "Invalid data");
                 }
             }
+            // Print out avg of results
+            float I_avg = 1000*VAL_TO_VOLTS(I_sum/(float)(I_count));
+            float V_avg =  CONVERT_V24(VAL_TO_VOLTS(V_sum/(float)(V_count)));
+            ESP_LOGI("ADC", "DIff Voltage: %.2fmV 12V Input Current: %.2fA", I_avg, V_TO_I_SHUNT(I_avg/1000.0));
+            ESP_LOGI("ADC", "24V Bus Voltage: %.2fV", V_avg);
+
+            // Reset sum + counters
+            I_sum = 0;
+            I_count =0;
+
+            V_sum = 0;
+            V_count = 0;
         }
 
         vTaskDelay(pdMS_TO_TICKS(1000));
