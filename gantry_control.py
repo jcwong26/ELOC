@@ -69,18 +69,19 @@ class GantryControl():
     def moveXY(self, x_mm=0, y_mm=0):
         self.command("G0 X{} Y{}\r\n".format(x_mm, y_mm))
 
-    def moveZ(self, z_mm):
+    def moveZ(self, z_deg):
+        z_mm = z_deg/10.0
         self.command("G0 Z{}\r\n".format(z_mm))
 
-    def moveToOrigin(self):
-        self.command("G28\r\n") # move to origin
+    # Sets the current position to (0, 0, 0)
+    def setOrigin(self):
+        self.command("G92 X0 Y0 Z0\r\n")
 
+# Test Code
 gantry = GantryControl()
 time.sleep(2)
-
 gantry.setSpeed(500)
-# gantry.command("M206 X0\r\n")
-gantry.command("G92 X0\r\n") # set current position to 0
+gantry.setOrigin()
 
 for i in range(3):
     gantry.moveXY(x_mm=9) # about 90 degrees
