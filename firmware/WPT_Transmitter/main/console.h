@@ -10,8 +10,6 @@
 #include "nvs.h"
 #include "nvs_flash.h"
 
-#define NUM_COMMANDS 8
-
 void initialize_nvs(void);
 void initialize_console(void);
 
