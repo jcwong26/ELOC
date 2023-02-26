@@ -4,8 +4,8 @@ import sys
 import glob
 
 class GantryControl():
-    def __init__(self) -> None:
-        self.ser = self.connectSerial('COM5')
+    def __init__(self, port) -> None:
+        self.ser = self.connectSerial(port)
         # self.ser = self.serial_ports()
     
     # Query available serial ports and return available one
