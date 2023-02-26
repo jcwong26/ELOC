@@ -9,6 +9,8 @@
 #define DEFAULT_SW_FREQ 100E3       // Default 100 kHz Switching Freq
 #define MAX_SW_FREQ 500E3
 
+#define CHARGING_SW_FREQ 250E3      // Figure this out
+
 
 //      Inverter Timer
 #define LEDC_TIMER              LEDC_TIMER_0
@@ -26,5 +28,8 @@ void enable_bridge(void);
 void disable_bridge(void);
 void turn_fan_on(void);
 void turn_fan_off(void);
+
+void start_charging(void);
+void stop_charging(void);
 
 void flash_wpt_led(void*);

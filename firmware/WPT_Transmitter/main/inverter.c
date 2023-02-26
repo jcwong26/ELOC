@@ -90,3 +90,14 @@ void sweep_sw_freq(void){
         vTaskDelay(pdMS_TO_TICKS(100));   
     }
 }
+
+void start_charging(void){
+    turn_fan_on();
+    enable_bridge();
+    set_sw_freq(CHARGING_SW_FREQ);
+}
+
+void stop_charging(void){
+    disable_bridge();
+    turn_fan_off();
+}

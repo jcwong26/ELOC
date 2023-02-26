@@ -43,6 +43,17 @@ static int cmd_turn_fan_off(int argc, char **argv) {
     return ESP_OK;
 }
 
+static int cmd_start_charging(int argc, char **argv) {
+    start_charging();
+    printf("Charging Started\n");
+    return ESP_OK;
+}
+
+static int cmd_stop_charging(int argc, char **argv) {
+    stop_charging();
+    printf("Charging Stopped\n");
+    return ESP_OK;
+}
 
 void register_commands(void){
     // Set Switching frequency Command
@@ -93,6 +104,22 @@ void register_commands(void){
         .func = cmd_turn_fan_off,
     };
     ESP_ERROR_CHECK(esp_console_cmd_register(&turn_fan_off_cmd));
+    
+    const esp_console_cmd_t start_charging_cmd = {
+        .command = "startCharging",
+        .help = "Starts Wireless Power Transfer",
+        .hint = NULL,
+        .func = cmd_start_charging,
+    };
+    ESP_ERROR_CHECK(esp_console_cmd_register(&start_charging_cmd));
+
+    const esp_console_cmd_t stop_charging_cmd = {
+        .command = "stopCharging",
+        .help = "Stops Wireless Power Transfer",
+        .hint = NULL,
+        .func = cmd_stop_charging,
+    };
+    ESP_ERROR_CHECK(esp_console_cmd_register(&stop_charging_cmd));
 
 
 }
