@@ -3,15 +3,13 @@
 #include <string.h>
 #include <fcntl.h>
 
-#include "lv_controller.h"
-#include "commands.h"
-
-// #include "freertos/FreeRTOS.h"
-// #include "freertos/task.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/queue.h"
 #include "esp_log.h"
 #include "esp_err.h"
 #include "pn532.h"
-#include <driver/gpio.h>
+#include "driver/gpio.h"
 #include "driver/spi_master.h"
 #include "driver/ledc.h"
 #include "esp_system.h"
@@ -24,51 +22,57 @@
 #include "cmd_nvs.h"
 #include "cmd_system.h"
 
+#include "lv_controller.h"
+#include "commands.h"
+#include "nfc_module.h"
+#include "ring_light.h"
+#include "limit_switches.h"
+#include "state_machine.h"
+
+/* MACROS */
 #define SENDER_HOST SPI2_HOST
 #define PIN_NUM_MISO 12
 #define PIN_NUM_MOSI 7
 #define PIN_NUM_CLK 6
 #define PIN_NUM_CS 5
 
+/* GLOBALS */
 static const char *TAG = "main";
+TaskHandle_t nfc_module_task_handle = NULL;
+TaskHandle_t state_machine_task_handle = NULL;
 
+/* INITS */
 static void init_GPIO(void)
 {
     // Set solenoid output
     gpio_set_direction(GPIO_NUM_38, GPIO_MODE_OUTPUT);
 
     // Set limit switch inputs
+    gpio_set_direction(LIM1_GPIO, GPIO_MODE_INPUT); // LIM1
+    gpio_pulldown_dis(LIM1_GPIO);
+    gpio_pullup_en(LIM1_GPIO);
+    gpio_set_intr_type(LIM1_GPIO, GPIO_INTR_NEGEDGE);
+
+    gpio_set_direction(LIM2_GPIO, GPIO_MODE_INPUT); // LIM2
+    gpio_pulldown_dis(LIM2_GPIO);
+    gpio_pullup_en(LIM2_GPIO);
+    gpio_set_intr_type(LIM2_GPIO, GPIO_INTR_NEGEDGE);
+
+    gpio_set_direction(LIM3_GPIO, GPIO_MODE_INPUT); // LIM3
+    gpio_pulldown_dis(LIM3_GPIO);
+    gpio_pullup_en(LIM3_GPIO);
+    gpio_set_intr_type(LIM3_GPIO, GPIO_INTR_NEGEDGE);
+
+    gpio_set_direction(LIM4_GPIO, GPIO_MODE_INPUT); // LIM4
+    gpio_pulldown_dis(LIM4_GPIO);
+    gpio_pullup_en(LIM4_GPIO);
+    gpio_set_intr_type(LIM4_GPIO, GPIO_INTR_NEGEDGE);
 
     // Set sled control outputs
     gpio_set_direction(GPIO_NUM_1, GPIO_MODE_OUTPUT); // EN
     gpio_set_direction(GPIO_NUM_2, GPIO_MODE_OUTPUT); // DI
     gpio_set_direction(GPIO_NUM_3, GPIO_MODE_OUTPUT); // PWM
     gpio_set_direction(GPIO_NUM_4, GPIO_MODE_OUTPUT); // DIR
-}
-
-static void init_nfc_reader(void)
-{
-    nfc_reader = pn532_init(0, 43, 44, 0); // passing UART0, tx=43, rx=44, 0 for output bits rn
-
-    // 5 retries before giving up
-    int count = 0;
-    while (nfc_reader == NULL)
-    {
-        nfc_reader = pn532_init(0, 43, 44, 0);
-        count++;
-        if (count > 12)
-        {
-            break;
-        }
-    }
-    if (nfc_reader != NULL)
-    {
-        ESP_LOGI(TAG, "NFC Module Initialized");
-    }
-    else
-    {
-        ESP_LOGE(TAG, "NFC Module NOT Initialized...");
-    }
 }
 
 static void ledc_init(void)
@@ -143,6 +147,7 @@ static void initialize_console(void)
     linenoiseHistorySetMaxLen(10);
 }
 
+/* REGISTER COMMANDS */
 static void register_commands(void)
 {
     /* Lock Solenoid */
@@ -174,18 +179,18 @@ static void register_commands(void)
     }
 
     /* Read NFC Tag */
-    esp_console_cmd_t read_nfc_tag_cmd = {
-        .command = "read_nfc_tag",
-        .help = "Polls NFC reader to return a detected NFC tag",
-        .hint = NULL,
-        .func = read_single_nfc_tag,
-        .argtable = NULL,
-    };
-    ret = esp_console_cmd_register(&read_nfc_tag_cmd);
-    if (ret != ESP_OK)
-    {
-        printf("Error resgistering 'read_nfc_tag' command\n");
-    }
+    // esp_console_cmd_t read_nfc_tag_cmd = {
+    //     .command = "read_nfc_tag",
+    //     .help = "Polls NFC reader to return a detected NFC tag",
+    //     .hint = NULL,
+    //     .func = read_single_nfc_tag,
+    //     .argtable = NULL,
+    // };
+    // ret = esp_console_cmd_register(&read_nfc_tag_cmd);
+    // if (ret != ESP_OK)
+    // {
+    //     printf("Error resgistering 'read_nfc_tag' command\n");
+    // }
 
     /* Set Motor PWM */
     struct arg_int *duty;
@@ -256,34 +261,76 @@ static void register_commands(void)
     {
         printf("Error resgistering 'dis_mtr_output' command\n");
     }
+
+    /* Rainbow Chase on Ring Light */
+    esp_console_cmd_t rainbow_chase_cmd = {
+        .command = "rainbow_chase",
+        .help = "Rainbow chase on right light (inf)",
+        .hint = NULL,
+        .func = rainbow_chase_inf,
+        .argtable = NULL,
+    };
+    ret = esp_console_cmd_register(&rainbow_chase_cmd);
+    if (ret != ESP_OK)
+    {
+        printf("Error resgistering 'rainbow_chase' command\n");
+    }
+
+    /* Set white LEDs on Ring Light */
+    esp_console_cmd_t white_leds_cmd = {
+        .command = "white_leds",
+        .help = NULL,
+        .hint = NULL,
+        .func = set_white_leds,
+        .argtable = NULL,
+    };
+    ret = esp_console_cmd_register(&white_leds_cmd);
+    if (ret != ESP_OK)
+    {
+        printf("Error resgistering 'white_leds' command\n");
+    }
+
+    /* Turn LEDs off on Ring Light */
+    esp_console_cmd_t leds_off_cmd = {
+        .command = "leds_off",
+        .help = NULL,
+        .hint = NULL,
+        .func = leds_off,
+        .argtable = NULL,
+    };
+    ret = esp_console_cmd_register(&leds_off_cmd);
+    if (ret != ESP_OK)
+    {
+        printf("Error resgistering 'leds_off' command\n");
+    }
 }
 
 void app_main(void)
 {
     ESP_LOGI(TAG, "LV Controller Starting");
 
-    /* LV Controller Inits */
+    /* GPIO Init */
     init_GPIO();
-    // init_nfc_reader();
+
+    /* Ring Light Init */
+    init_ring_light();
 
     /* PWM Init */
-    gpio_set_direction(GPIO_NUM_17, GPIO_MODE_OUTPUT);
+    gpio_set_direction(GPIO_NUM_17, GPIO_MODE_OUTPUT); // for debug PWM LED only
     ledc_init();
 
     /* USB CONSOLE */
     initialize_nvs();
-
     initialize_console();
 
     /* Register commands */
-    // register_commands();
     esp_console_register_help_command();
     register_system_common();
     register_system_sleep();
     register_nvs();
     register_commands();
-    // register_wifi();
 
+    /* L9958 Motor Driver SPI bus setup */ // TODO
     esp_err_t err;
     spi_device_handle_t spi;
     spi_bus_config_t buscfg = {
@@ -320,6 +367,15 @@ void app_main(void)
         prompt = CONFIG_IDF_TARGET "> ";
 #endif // CONFIG_LOG_COLORS
     }
+
+    /* NFC Module Task */
+    xTaskCreate(read_single_nfc_tag, "read_single_nfc_tag", 4096, NULL, 10, &nfc_module_task_handle);
+
+    /* Limit Switches Task */
+    init_limit_switches();
+
+    /* State Machine Task */
+    xTaskCreate(state_machine, "state_machine", 4096, NULL, 10, &state_machine_task_handle);
 
     /* Main loop */
     while (true)

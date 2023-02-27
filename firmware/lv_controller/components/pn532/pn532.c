@@ -687,7 +687,7 @@ int pn532_Cards_and_return_data(pn532_t *p, uint8_t *uid, uint8_t *uidLength)
    if (!p->pending)
    {
       pn532_ILPT_Send(p);
-      ESP_LOGI(TAG, "SENT ILPT");
+      // ESP_LOGI(TAG, "SENT ILPT");
    }
    if (p->pending != 0x4B)
       return -(p->lasterr = PN532_ERR_CMDMISMATCH); // We expect to be waiting for InListPassiveTarget response
