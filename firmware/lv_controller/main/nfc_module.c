@@ -10,7 +10,7 @@
 static const char *TAG = "nfc_module";
 pn532_t *nfc_reader = NULL;
 
-void init_nfc_reader(void)
+int init_nfc_reader(void)
 {
     nfc_reader = pn532_init(0, 43, 44, 0); // passing UART0, tx=43, rx=44, 0 for output bits rn
 
@@ -29,18 +29,21 @@ void init_nfc_reader(void)
     if (nfc_reader != NULL)
     {
         ESP_LOGI(TAG, "NFC Module Initialized");
+        return 1;
     }
-    else
-    {
-        ESP_LOGE(TAG, "NFC Module NOT Initialized...");
-    }
+    ESP_LOGE(TAG, "NFC Module NOT Initialized...");
+    return 0;
 }
 
 void read_single_nfc_tag(void *)
 {
-    init_nfc_reader();
-    printf("Searching for tags...\n");
-    while (1)
+    int ret = init_nfc_reader();
+    if (ret)
+    {
+        printf("Searching for tags...\n");
+    }
+
+    while (ret)
     {
         uint8_t uid[100] = {};
         uint8_t uidLength;
@@ -66,4 +69,5 @@ void read_single_nfc_tag(void *)
         printf("Detected NFC Tag with uid: %s\n", uid_str);
         ESP_LOGI(TAG, "Detected NFC Tag with uid: %s", uid_str);
     }
+    vTaskDelete(NULL); // if module wasn't initialized, delete this task
 }

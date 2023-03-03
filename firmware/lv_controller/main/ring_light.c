@@ -12,6 +12,8 @@ static const char *TAG = "ring_light";
 static uint8_t led_strip_pixels[NUM_LEDS * 3];
 static rmt_channel_handle_t led_chan = NULL;
 static rmt_encoder_handle_t led_encoder = NULL;
+static TaskHandle_t rainbow_chase_task_handle = NULL;
+static bool go_rainbow_chase = false;
 
 static void led_strip_hsv2rgb(uint32_t h, uint32_t s, uint32_t v, uint32_t *r, uint32_t *g, uint32_t *b)
 {
@@ -86,7 +88,27 @@ void init_ring_light(void)
     ESP_ERROR_CHECK(rmt_enable(led_chan));
 }
 
-int rainbow_chase_inf(void)
+int rainbow_chase_start(int argc, char **argv)
+{
+    if (go_rainbow_chase)
+    {
+        // chase already started, do nothing
+        ESP_LOGI(TAG, "Rainbow chase already started");
+        printf("Rainbow chase already started");
+        return 0;
+    }
+    go_rainbow_chase = true;
+    xTaskCreate(rainbow_chase_inf, "rainbow_chase_inf", 4096, NULL, 10, &rainbow_chase_task_handle);
+    return 0;
+}
+
+int rainbow_chase_stop(int argc, char **argv)
+{
+    go_rainbow_chase = false;
+    return 0;
+}
+
+void rainbow_chase_inf(void *)
 {
     uint32_t red = 0;
     uint32_t green = 0;
@@ -99,7 +121,7 @@ int rainbow_chase_inf(void)
     rmt_transmit_config_t tx_config = {
         .loop_count = 0, // no transfer loop
     };
-    while (1)
+    while (go_rainbow_chase)
     {
         for (int i = 0; i < 3; i++)
         {
@@ -107,7 +129,7 @@ int rainbow_chase_inf(void)
             {
                 // Build RGB pixels
                 hue = j * 360 / NUM_LEDS + start_rgb;
-                led_strip_hsv2rgb(hue, 100, 100, &red, &green, &blue);
+                led_strip_hsv2rgb(hue, 100, 30, &red, &green, &blue);
                 led_strip_pixels[j * 3 + 0] = green;
                 led_strip_pixels[j * 3 + 1] = blue;
                 led_strip_pixels[j * 3 + 2] = red;
@@ -115,16 +137,19 @@ int rainbow_chase_inf(void)
             // Flush RGB values to LEDs
             ESP_ERROR_CHECK(rmt_transmit(led_chan, led_encoder, led_strip_pixels, sizeof(led_strip_pixels), &tx_config));
             vTaskDelay(pdMS_TO_TICKS(LED_CHASE_SPEED_MS));
-            memset(led_strip_pixels, 0, sizeof(led_strip_pixels));
-            ESP_ERROR_CHECK(rmt_transmit(led_chan, led_encoder, led_strip_pixels, sizeof(led_strip_pixels), &tx_config));
-            vTaskDelay(pdMS_TO_TICKS(LED_CHASE_SPEED_MS));
+            // memset(led_strip_pixels, 0, sizeof(led_strip_pixels));
+            // ESP_ERROR_CHECK(rmt_transmit(led_chan, led_encoder, led_strip_pixels, sizeof(led_strip_pixels), &tx_config));
+            // vTaskDelay(pdMS_TO_TICKS(LED_CHASE_SPEED_MS));
         }
+
+        memset(led_strip_pixels, 0, sizeof(led_strip_pixels));
+        ESP_ERROR_CHECK(rmt_transmit(led_chan, led_encoder, led_strip_pixels, sizeof(led_strip_pixels), &tx_config));
         start_rgb += 60;
     }
-    return 0;
+    vTaskDelete(NULL);
 }
 
-int set_white_leds(void)
+int set_white_leds(int argc, char **argv)
 {
     rmt_transmit_config_t tx_config = {
         .loop_count = 0, // no transfer loop
@@ -137,7 +162,7 @@ int set_white_leds(void)
     return 0;
 }
 
-int leds_off(void)
+int leds_off(int argc, char **argv)
 {
     rmt_transmit_config_t tx_config = {
         .loop_count = 0, // no transfer loop

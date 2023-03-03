@@ -262,18 +262,32 @@ static void register_commands(void)
         printf("Error resgistering 'dis_mtr_output' command\n");
     }
 
-    /* Rainbow Chase on Ring Light */
-    esp_console_cmd_t rainbow_chase_cmd = {
-        .command = "rainbow_chase",
-        .help = "Rainbow chase on right light (inf)",
+    /* Start Rainbow Chase on Ring Light */
+    esp_console_cmd_t rainbow_chase_start_cmd = {
+        .command = "rainbow_chase_start",
+        .help = "Start rRainbow chase on ring light",
         .hint = NULL,
-        .func = rainbow_chase_inf,
+        .func = rainbow_chase_start,
         .argtable = NULL,
     };
-    ret = esp_console_cmd_register(&rainbow_chase_cmd);
+    ret = esp_console_cmd_register(&rainbow_chase_start_cmd);
     if (ret != ESP_OK)
     {
-        printf("Error resgistering 'rainbow_chase' command\n");
+        printf("Error resgistering 'rainbow_chase_start' command\n");
+    }
+
+    /* Stop Rainbow Chase on Ring Light */
+    esp_console_cmd_t rainbow_chase_stop_cmd = {
+        .command = "rainbow_chase_stop",
+        .help = "Stop rainbow chase on ring light",
+        .hint = NULL,
+        .func = rainbow_chase_stop,
+        .argtable = NULL,
+    };
+    ret = esp_console_cmd_register(&rainbow_chase_stop_cmd);
+    if (ret != ESP_OK)
+    {
+        printf("Error resgistering 'rainbow_chase_stop' command\n");
     }
 
     /* Set white LEDs on Ring Light */
@@ -368,6 +382,9 @@ void app_main(void)
 #endif // CONFIG_LOG_COLORS
     }
 
+    /* Turn LEDs off on startup */
+    leds_off(0, NULL);
+
     /* NFC Module Task */
     xTaskCreate(read_single_nfc_tag, "read_single_nfc_tag", 4096, NULL, 10, &nfc_module_task_handle);
 
@@ -375,7 +392,7 @@ void app_main(void)
     init_limit_switches();
 
     /* State Machine Task */
-    xTaskCreate(state_machine, "state_machine", 4096, NULL, 10, &state_machine_task_handle);
+    // xTaskCreate(state_machine, "state_machine", 4096, NULL, 10, &state_machine_task_handle);
 
     /* Main loop */
     while (true)
@@ -417,76 +434,4 @@ void app_main(void)
     printf(TAG, "Error or end-of-input, terminating console\n");
     ESP_LOGE(TAG, "Error or end-of-input, terminating console");
     esp_console_deinit();
-
-    //     /* NFC READER */
-
-    //     // pn532_t *nfcreader = pn532_init(0, 43, 44, 0); // passing UART0, tx=43, rx=44, 0 for output bits rn
-    //     // // pn532_t *nfcreader = pn532_init(1, 17, 18, 3); // passing UART0, tx=37, rx=36, 0 for output bits rn
-    //     // int count = 0;
-    //     // while (nfcreader == NULL)
-    //     // {
-    //     //     // nfcreader = pn532_init(1, 17, 18, 3);
-    //     //     nfcreader = pn532_init(0, 43, 44, 0);
-    //     //     count++;
-    //     //     if (count > 12)
-    //     //     {
-    //     //         break;
-    //     //     }
-    //     // }
-    //     // if (nfcreader != NULL)
-    //     // {
-    //     //     ESP_LOGI(TAG, "NFC Module Initialized");
-    //     // }
-
-    //     // usleep(100000);
-    //     // while (true)
-    //     // {
-    //     //     uint8_t uid[100] = {};
-    //     //     uint8_t uidLength;
-    //     //     int res = pn532_Cards_and_return_data(nfcreader, &uid[0], &uidLength);
-
-    //     //     ESP_LOGI(TAG, "Doing first check for tags");
-    //     //     while (res <= 0)
-    //     //     {
-    //     //         res = pn532_Cards_and_return_data(nfcreader, &uid[0], &uidLength);
-    //     //         usleep(2000000);
-    //     //         // still checking
-    //     //         ESP_LOGI(TAG, "still checking for tags");
-    //     //     }
-    //     //     // ESP_LOGI("main", "res: %d", res);
-    //     //     // char text[21] = {};
-    //     //     // uint8_t *nfcId = pn532_nfcid(nfcreader, text);
-    //     //     // ESP_LOGI("main", "nfcId: %d", *nfcId);
-    //     //     // ESP_LOGI("main", "uidLength: %d", uidLength);
-
-    //     //     char uid_str[16 * 4];
-    //     //     int index = 0;
-    //     //     for (uint8_t i = 0; i < uidLength; i++)
-    //     //     {
-    //     //         index += sprintf(&uid_str[index], "%d ", uid[i]);
-    //     //     }
-    //     //     ESP_LOGI(TAG, "Detected NFC Tag with uid: %s", uid_str);
-    //     // }
-
-    //     // for (uint8_t i = 0; i < uidLength; i++)
-    //     // {
-    //     //     ESP_LOGI("main", "uid[%d]: %d", i, uid[i]);
-    //     // }
-
-    //     // uint8_t buf[64] = {};
-    //     // uint8_t uid[64] = {};
-    //     // uint8_t uidLength;
-    //     // count = 0;
-    //     // bool success = readPassiveTargetID2(nfcreader, &uid[0], &uidLength);
-    //     // while (!success)
-    //     // {
-    //     //     success = readPassiveTargetID2(nfcreader, &uid[0], &uidLength);
-    //     //     // ESP_LOGI("main", "count: %d", count);
-    //     //     count++;
-    //     // }
-
-    //     // ESP_LOGI("main", "uidLength: %d", uidLength);
-    //     // // char text[21] = {};
-    //     // // uint8_t *nfcId = pn532_nfcid(nfcreader, text);
-    //     // // ESP_LOGI("main", "nfcId: %d", *nfcId);
 }

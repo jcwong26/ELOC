@@ -6,7 +6,7 @@
 // NFC reader global pointer
 extern pn532_t *nfc_reader;
 
-void init_nfc_reader(void);
+int init_nfc_reader(void);
 void read_single_nfc_tag(void *);
 
 #endif
