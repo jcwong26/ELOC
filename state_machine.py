@@ -2,9 +2,11 @@ import cv2 #3.2.0 on BBB
 import cv2.aruco as aruco
 import numpy as np
 import math
+import time
+import serial
 from enum import Enum
 
-import GantryControl
+from gantry_control import GantryControl
 
 # TODO: check port names
 GANTRY_PORT = '/dev/ttyUSB0'
@@ -22,7 +24,7 @@ MARKER_LENGTH = 0.06 # marker size in m
 aruco_dict_type = aruco.DICT_4X4_50
 cv2.aruco_dict = aruco.Dictionary_get(aruco_dict_type)
 parameters = aruco.DetectorParameters_create()
-
+ 
 # Load camera calibration data
 dir = "camera_calibration/data/"
 cam_matrix = np.load(dir+'cam_mtx.npy')
@@ -99,14 +101,20 @@ def move_to_charger(gantry, camera):
     img = capture_frame(camera)
     x_cmd_mm, y_cmd_mm, z_cmd_deg = calculate_command(img)
 
-    gantry.moveXY(x_cmd, y_cmd)
-    time.sleep(1)
-    gantry.moveZ(z_cmd)
+    gantry.moveXY(x_cmd_mm, y_cmd_mm)
+    gantry.moveZ(z_cmd_deg)
 
 def move_gantry_back(gantry):
     gantry.moveZ(0)
-    time.sleep(1)
     gantry.moveXY(0, 0)
+
+def write_to_lv(transition):
+    lv.write("{}\n".format(transition))
+    # TODO wait for response
+    
+def write_to_wpt(command):
+    wpt.write("{}\n".format(command))
+    # TODO wait for response
 
 # Initialize camera and gantry
 camera = cv2.VideoCapture(0)
@@ -129,35 +137,41 @@ while (True):
 
         if current_state == States.Vacant:
             if input == Inputs.DoorOpen.name:
+                write_to_lv(Transitions.ToLoading.name)
                 current_state = States.Loading
 
-        else if current_state == States.Loading:
+        elif current_state == States.Loading:
             if input == Inputs.BikeOn.name:
+                write_to_lv(Transitions.ToClosed.name)
                 current_state = States.Closed
         
-        else if current_state == States.Closed: # wait for two states
-            if input == Inputs.NFCTap
+        elif current_state == States.Closed: # wait for two states
+            if input == Inputs.NFCTap.name:
+                write_to_lv(Transitions.ToCharging.name)
+                move_to_charger(gantry, camera)
+                write_to_wpt("startCharging")
                 current_state = States.Charging
 
-        else if current_state == States.Charging:
+        elif current_state == States.Charging:
             if input == Inputs.NFCTap.name:
+                write_to_wpt("stopCharging")
+                move_gantry_back(gantry)
+                write_to_lv(Transitions.ToUnlocked.name)
                 current_state = States.Unlocked
 
-        else if current_state == States.Unlocked:
+        elif current_state == States.Unlocked:
             if input == Inputs.DoorOpen.name:
-                lv.write(Transitions.ToCharging.name)
-                move_to_charger(gantry, camera)
-                wpt.write("startCharging\n")
-
+                write_to_lv(Transitions.ToUnloading.name)
                 current_state = States.Unloading
 
-        else if current_state == States.Unloading:
+        elif current_state == States.Unloading:
             if input == Inputs.BikeOff.name:
-                wpt.write("stopCharging\n")
+                write_to_lv(Transitions.ToEmpty.name)
                 current_state = States.Empty
 
-        else if current_state == States.Empty:
+        elif current_state == States.Empty:
             if input == Inputs.DoorClosed.name:
+                write_to_lv(Transitions.ToVacant.name)
                 current_state = States.Vacant
 
         else:
