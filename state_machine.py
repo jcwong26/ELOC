@@ -14,10 +14,10 @@ LV_PORT = '/dev/tty '
 WPT_PORT = '/dev/tty '
 
 CAM_X_OFFSET_MM = 50.0
-CAM_Y_OFFSET_MM = 50.0
-Z_MOUNTING_OFFSET_MM = 38.2 # + camera to gantry in z direction
-ARM_LENGTH_MM = 346.3
-MAX_Z = Z_MOUNTING_OFFSET_MM + ARM_LENGTH_MM
+CAM_Z_OFFSET_MM = 50.0
+Y_MOUNTING_OFFSET_MM = 38.2 # + camera to gantry in z direction
+ARM_LENGTH_MM = 260
+MAX_Y = Y_MOUNTING_OFFSET_MM + ARM_LENGTH_MM
 
 # Aruco Marker Information
 MARKER_LENGTH = 0.06 # marker size in m
@@ -64,10 +64,10 @@ def capture_frame(camera):
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     return gray
 
-def calculate_xz_cmd(z_dist_mm):
-    z_arm = z_dist_mm-Z_MOUNTING_OFFSET_MM
-    theta = math.degrees(math.asin(z_arm/ARM_LENGTH_MM))
-    x = math.sqrt(ARM_LENGTH_MM*ARM_LENGTH_MM - z_dist_mm*z_dist_mm)
+def calculate_xy_cmd(y_dist_mm):
+    y_arm = y_dist_mm-Y_MOUNTING_OFFSET_MM
+    theta = math.degrees(math.asin(y_arm/ARM_LENGTH_MM))
+    x = math.sqrt(ARM_LENGTH_MM*ARM_LENGTH_MM - y_dist_mm*y_dist_mm)
 
     return theta, x
 
@@ -79,34 +79,34 @@ def calculate_command(image):
         rvec, tvec = aruco.estimatePoseSingleMarkers(corners, MARKER_LENGTH, cam_matrix, dist_coeff)
         tvec = tvec.ravel()
         # Positions to top left corner of marker
-        x_mm = tvec[0]*1000 # x pos dir: right
-        y_mm = tvec[1]*1000 # y pos dir: down
-        z_mm = tvec[2]*1000
-
-    y_out_mm = CAM_Y_OFFSET_MM - y_mm
+        x_cam_mm = tvec[0]*1000 # camera x pos dir: right
+        z_cam_mm = -tvec[1]*1000 # camera y pos dir: down
+        y_cam_mm = tvec[2]*1000
 
     # Check if bike is reachable
-    if z_mm > MAX_Z:
+    if y_cam_mm > MAX_Y:
         return None, None, None
 
-    z_out_deg, x_arm = calculate_xz_cmd(z_mm)
-    x_out_mm = CAM_X_OFFSET_MM - x_mm - x_arm
+    z_out_mm = CAM_Z_OFFSET_MM + z_cam_mm # vertical direction
+
+    y_out_deg, x_arm = calculate_xy_cmd(y_cam_mm)
+    x_out_mm = CAM_X_OFFSET_MM - x_cam_mm - x_arm
 
     if x_out_mm < 0:
         return None, None, None
     
-    return x_out_mm, y_out_mm, z_out_deg
+    return x_out_mm, z_out_mm, y_out_deg
 
 def move_to_charger(gantry, camera):
     img = capture_frame(camera)
-    x_cmd_mm, y_cmd_mm, z_cmd_deg = calculate_command(img)
+    x_cmd_mm, z_cmd_mm, y_cmd_deg = calculate_command(img)
 
-    gantry.moveXY(x_cmd_mm, y_cmd_mm)
-    gantry.moveZ(z_cmd_deg)
+    gantry.move_xz(x_cmd_mm, z_cmd_mm)
+    gantry.move_arm(y_cmd_deg)
 
 def move_gantry_back(gantry):
-    gantry.moveZ(0)
-    gantry.moveXY(0, 0)
+    gantry.auto_home_arm()
+    gantry.move_xz(0, 0)
 
 def write_to_lv(transition):
     lv.write("{}\n".format(transition))
@@ -120,8 +120,8 @@ def write_to_wpt(command):
 camera = cv2.VideoCapture(0)
 gantry = GantryControl(GANTRY_PORT)
 time.sleep(2)
-gantry.setSpeed(500)
-gantry.setOrigin()
+gantry.set_speed(500)
+gantry.set_origin()
 
 # TODO: Initialize LV controller and WPT serial ports
 lv = serial.Serial(port=LV_PORT, baudrate=115200)

@@ -3,6 +3,8 @@ import time
 import sys
 import glob
 
+MAX_Z = 480
+
 class GantryControl():
     def __init__(self, port) -> None:
         self.ser = self.connectSerial(port)
@@ -62,31 +64,43 @@ class GantryControl():
                 break
 
     # Set feedrate (mm/min)
-    def setSpeed(self, speed_mm_min):
+    def set_speed(self, speed_mm_min):
         self.command("G0 F{}\r\n".format(speed_mm_min))
 
     # Move in the XY plane (mm)
-    def moveXY(self, x_mm=0, y_mm=0):
-        self.command("G0 X{} Y{}\r\n".format(x_mm, y_mm))
+    def move_xz(self, x_mm=0, y_mm=0):
+        self.command("G0 X{} Z{} F1200\r\n".format(x_mm, y_mm))
 
-    def moveZ(self, z_deg):
+    def move_arm(self, z_deg):
         z_mm = z_deg/10.0
-        self.command("G0 Z{}\r\n".format(z_mm))
+        self.command("G0 Y{} F200\r\n".format(z_mm))
+        self.disable_steppers()
 
     # Sets the current position to (0, 0, 0)
-    def setOrigin(self):
+    def set_origin(self):
         self.command("G92 X0 Y0 Z0\r\n")
 
+    def auto_home_xz(self):
+        self.command("G28 X Z\r\n")
+
+    def auto_home_arm(self):
+        self.move_arm(-1)
+        self.disable_steppers()
+        self.command("G92 Y0\r\n")
+    
+    def disable_steppers(self):
+        self.command("M18\r\n")
+
 # Test Code
-gantry = GantryControl()
+gantry = GantryControl('COM5')
 time.sleep(2)
-gantry.setSpeed(500)
-gantry.setOrigin()
+gantry.set_speed(500)
+gantry.set_origin()
 
 for i in range(3):
-    gantry.moveXY(x_mm=9) # about 90 degrees
+    gantry.move_xz(x_mm=9) # about 90 degrees
     time.sleep(1)
-    gantry.moveXY(x_mm=0)
+    gantry.move_xz(x_mm=0)
     time.sleep(1)
 
 gantry.ser.close()
