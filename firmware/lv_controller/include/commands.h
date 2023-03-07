@@ -24,7 +24,6 @@ int calc_bits_from_duty(int duty);
 
 int lock_solenoid(int argc, char **argv);
 int unlock_solenoid(int argc, char **argv);
-// int read_single_nfc_tag(int argc, char **argv);
 int set_pwm(int argc, char **argv);
 int set_mtr_dir(int argc, char **argv);
 int enable_motor_output(int argc, char **argv);

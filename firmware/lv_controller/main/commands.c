@@ -44,34 +44,6 @@ int unlock_solenoid(int argc, char **argv)
     return 0;
 }
 
-// int read_single_nfc_tag(int argc, char **argv)
-// {
-//     printf("Searching for tags...\n");
-//     uint8_t uid[100] = {};
-//     uint8_t uidLength;
-//     if (nfc_reader == NULL)
-//     {
-//         printf("NFC Reader is NULL");
-//     }
-
-//     int res = pn532_Cards_and_return_data(nfc_reader, &uid[0], &uidLength);
-//     while (res <= 0)
-//     {
-//         res = pn532_Cards_and_return_data(nfc_reader, &uid[0], &uidLength);
-//         usleep(2000000);
-//     }
-
-//     char uid_str[16 * 4];
-//     int index = 0;
-//     for (uint8_t i = 0; i < uidLength; i++)
-//     {
-//         index += sprintf(&uid_str[index], "%d ", uid[i]);
-//     }
-//     printf("Detected NFC Tag with uid: %s\n", uid_str);
-//     ESP_LOGI(TAG, "Detected NFC Tag with uid: %s", uid_str);
-//     return 0;
-// }
-
 int set_pwm(int argc, char **argv)
 {
     // Expecting 2 arguments for this function
