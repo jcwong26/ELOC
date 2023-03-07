@@ -9,6 +9,10 @@
 
 #include "state_machine.h"
 #include "motor.h"
+#include "limit_switches.h"
+#include "ring_light.h"
+#include "solenoid.h"
+#include "commands.h"
 
 enum states
 {
@@ -23,7 +27,7 @@ enum states
 };
 
 static const char *TAG = "state_machine";
-static enum curr_state = Vacant;
+static enum states curr_state = Vacant;
 
 /*
     DON'T NEED SWITCH CASE, ALREADY HANDLING COMMAND PARSING THROUGH THE CONSOLE APP
@@ -110,44 +114,104 @@ int to_loading(void)
     // Move sled out
     sled_out();
 
-    // Poll until limit switch is hit, then stop the sled
+    // Poll until limit switch is hit for SLED OUT, then stop the sled (LIM1)
+    while (LIM1_state)
+    {
+    }
 
+    // Stop sled
+    stop_sled();
+
+    // Set new state
     curr_state = Loading;
     return 0;
 }
 
 int to_closed(void)
 {
+    // Move sled in
+    sled_in();
+
+    // Poll until limit switch is hit for SLED IN, then stop the sled (LIM3)
+    while (LIM3_state)
+    {
+    }
+
+    // Poll until limit switch is hit for DOOR CLOSED, then stop the sled (LIM4)
+    while (LIM4_state)
+    {
+    }
+
+    // Lock door
+    lock_solenoid();
+
+    // Set new state
     curr_state = Closed;
     return 0;
 }
 
 int to_charging(void)
 {
+    // Turn LEDs on white for CV
+    white_leds();
+
+    // Set new state
     curr_state = Charging;
     return 0;
 }
 
 int to_unlocked(void)
 {
+    // Turn LEDs off
+    leds_off();
+
+    // Unlock door
+    unlock_solenoid();
+
+    // Set new state
     curr_state = Unlocked;
     return 0;
 }
 
 int to_unloading(void)
 {
+    // Poll until limit switch is hit for DOOR OPEN (LIM4)
+    while (!LIM4_state)
+    {
+    }
+
+    // Move sled out
+    sled_out();
+
+    // Poll until limit switch is hit for SLED OUT, then stop the sled (LIM1)
+    while (LIM1_state)
+    {
+    }
+
+    // Stop sled
+    stop_sled();
+
+    // Set new state
     curr_state = Unloading;
     return 0;
 }
 
 int to_empty(void)
 {
-    curr_state = Empty;
-    return 0;
-}
+    // Move sled in
+    sled_in();
 
-int to_vacant(void)
-{
-    curr_state = Vacant;
+    // Poll until limit switch is hit for SLED IN, then stop the sled (LIM3)
+    while (LIM3_state)
+    {
+    }
+
+    // Poll until limit switch is hit for DOOR CLOSED, then stop the sled (LIM4)
+    while (LIM4_state)
+    {
+    }
+
+    // Set new state
+    curr_state = Empty;
     return 0;
 }

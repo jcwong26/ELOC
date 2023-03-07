@@ -88,23 +88,32 @@ void init_ring_light(void)
     ESP_ERROR_CHECK(rmt_enable(led_chan));
 }
 
-int rainbow_chase_start(int argc, char **argv)
+void rainbow_chase_start(void)
 {
     if (go_rainbow_chase)
     {
         // chase already started, do nothing
         ESP_LOGI(TAG, "Rainbow chase already started");
         printf("Rainbow chase already started");
-        return 0;
     }
     go_rainbow_chase = true;
     xTaskCreate(rainbow_chase_inf, "rainbow_chase_inf", 4096, NULL, 10, &rainbow_chase_task_handle);
+}
+
+int rainbow_chase_start_comm(int argc, char **argv)
+{
+    rainbow_chase_start();
     return 0;
 }
 
-int rainbow_chase_stop(int argc, char **argv)
+void rainbow_chase_stop(void)
 {
     go_rainbow_chase = false;
+}
+
+int rainbow_chase_stop_comm(int argc, char **argv)
+{
+    rainbow_chase_stop();
     return 0;
 }
 
@@ -149,7 +158,7 @@ void rainbow_chase_inf(void *)
     vTaskDelete(NULL);
 }
 
-int set_white_leds(int argc, char **argv)
+void white_leds(void)
 {
     rmt_transmit_config_t tx_config = {
         .loop_count = 0, // no transfer loop
@@ -159,10 +168,15 @@ int set_white_leds(int argc, char **argv)
     memset(led_strip_pixels, 255, sizeof(led_strip_pixels));
     // Flush RGB values to LEDs
     ESP_ERROR_CHECK(rmt_transmit(led_chan, led_encoder, led_strip_pixels, sizeof(led_strip_pixels), &tx_config));
+}
+
+int set_white_leds(int argc, char **argv)
+{
+    white_leds();
     return 0;
 }
 
-int leds_off(int argc, char **argv)
+void leds_off(void)
 {
     rmt_transmit_config_t tx_config = {
         .loop_count = 0, // no transfer loop
@@ -172,5 +186,10 @@ int leds_off(int argc, char **argv)
     memset(led_strip_pixels, 0, sizeof(led_strip_pixels));
     // Flush RGB values to LEDs
     ESP_ERROR_CHECK(rmt_transmit(led_chan, led_encoder, led_strip_pixels, sizeof(led_strip_pixels), &tx_config));
+}
+
+int leds_off_comm(int argc, char **argv)
+{
+    leds_off();
     return 0;
 }

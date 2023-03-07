@@ -3,13 +3,13 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "commands.h"
-#include "pn532.h"
 #include "esp_log.h"
 #include <driver/gpio.h>
 
+#include "commands.h"
+#include "solenoid.h"
+
 static const char *TAG = "commands";
-// pn532_t *nfc_reader = NULL;
 
 /* Helpers */
 int calc_bits_from_duty(int duty)
@@ -28,7 +28,7 @@ int calc_bits_from_duty(int duty)
 }
 
 /* Commands */
-int lock_solenoid(int argc, char **argv)
+int lock_solenoid_comm(int argc, char **argv)
 {
     // Set level low (0) to lock
     ESP_ERROR_CHECK(gpio_set_level(SOLENOID_GPIO, 0));
@@ -36,7 +36,7 @@ int lock_solenoid(int argc, char **argv)
     return 0;
 }
 
-int unlock_solenoid(int argc, char **argv)
+int unlock_solenoid_comm(int argc, char **argv)
 {
     // Set level high (1) to unlock
     ESP_ERROR_CHECK(gpio_set_level(SOLENOID_GPIO, 1));

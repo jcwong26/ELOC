@@ -5,10 +5,24 @@
 #include "esp_log.h"
 
 #include "nfc_module.h"
+#include "state_machine.h"
 #include "pn532.h"
+
+enum nfc_states
+{
+    Vacant,
+    Load,
+    Close,
+    Unlock,
+    Unload,
+    Empty
+};
 
 static const char *TAG = "nfc_module";
 pn532_t *nfc_reader = NULL;
+static enum nfc_states next_state = Vacant;
+static uint8_t curr_uid[100] = {'\0'};
+static uint8_t curr_uidLength = 0;
 
 int init_nfc_reader(void)
 {
@@ -68,6 +82,150 @@ void read_single_nfc_tag(void *)
         }
         printf("Detected NFC Tag with uid: %s\n", uid_str);
         ESP_LOGI(TAG, "Detected NFC Tag with uid: %s", uid_str);
+        nfc_state_machine(uid, uidLength);
+        vTaskDelay(pdMS_TO_TICKS(5000)); // delay 5s to ensure states are properly handled
     }
     vTaskDelete(NULL); // if module wasn't initialized, delete this task
+}
+
+void nfc_state_machine(uint8_t uid[], uint8_t uidLength)
+{
+    int ret = 0;
+    switch (next_state)
+    {
+    case Vacant:
+        ret = new_tag(uid, uidLength);
+        if (!ret)
+        {
+            ESP_LOGE(TAG, "ERROR: Could not register new tag...");
+            break;
+        }
+        ret = to_loading();
+        if (!ret)
+        {
+            ESP_LOGE(TAG, "ERROR: Could not transistion to loading state...");
+            break;
+        }
+        next_state = Load;
+        break;
+    case Load:
+        ret = check_tag(uid, uidLength);
+        if (!ret)
+        {
+            ESP_LOGI(TAG, "INFO: Detected unsaved tag...");
+            break;
+        }
+        ret = to_closed();
+        if (!ret)
+        {
+            ESP_LOGE(TAG, "ERROR: Could not transistion to closed state...");
+            break;
+        }
+        next_state = Close;
+        break;
+    case Close:
+        ret = check_tag(uid, uidLength);
+        if (!ret)
+        {
+            ESP_LOGI(TAG, "INFO: Detected unsaved tag...");
+            break;
+        }
+        ret = to_charging();
+        if (!ret)
+        {
+            ESP_LOGE(TAG, "ERROR: Could not transistion to loading state...");
+            break;
+        }
+        // send msg to BBB that bike is now in and door is closed/locked
+        next_state = Unlock;
+        break;
+    // case Lock:
+    //     ret = check_tag(uid, uidLength);
+    //     if (!ret)
+    //     {
+    //         ESP_LOGI(TAG, "INFO: Detected unsaved tag...");
+    //         break;
+    //     }
+    //     next_state = Unlock;
+    //     break;
+    case Unlock:
+        ret = check_tag(uid, uidLength);
+        if (!ret)
+        {
+            ESP_LOGI(TAG, "INFO: Detected unsaved tag...");
+            break;
+        }
+        ret = to_unlocked();
+        if (!ret)
+        {
+            ESP_LOGE(TAG, "ERROR: Could not transistion to unlocked state...");
+            break;
+        }
+        next_state = Unload;
+        break;
+    case Unload:
+        ret = check_tag(uid, uidLength);
+        if (!ret)
+        {
+            ESP_LOGI(TAG, "INFO: Detected unsaved tag...");
+            break;
+        }
+        ret = to_unloading();
+        if (!ret)
+        {
+            ESP_LOGE(TAG, "ERROR: Could not transistion to unloaded state...");
+            break;
+        }
+        next_state = Empty;
+        break;
+    case Empty:
+        ret = check_tag(uid, uidLength);
+        if (!ret)
+        {
+            ESP_LOGI(TAG, "INFO: Detected unsaved tag...");
+            break;
+        }
+        ret = to_empty();
+        if (!ret)
+        {
+            ESP_LOGE(TAG, "ERROR: Could not transistion to empty state...");
+            break;
+        }
+        memset(curr_uid, '\0', sizeof(curr_uid)); // reset uid
+        curr_uidLength = 0;                       // reset uid length
+        next_state = Vacant;
+        break;
+    default:
+        break;
+    }
+}
+
+int new_tag(uint8_t uid[], uint8_t uidLength)
+{
+    if (curr_uid[0] == '\0')
+    {
+        // No uid is set currently, so set the uid detected
+        for (int i = 0; i < uidLength; i++)
+        {
+            curr_uid[i] = uid[i];
+        }
+        curr_uidLength = uidLength;
+        return 1;
+    }
+    return 0;
+}
+
+int check_tag(uint8_t uid[], uint8_t uidLength)
+{
+    if (curr_uidLength == uidLength)
+    {
+        // Compare uids for further processing
+        for (int i = 0; i < uidLength; i++)
+        {
+            if (curr_uid[i] != uid[i])
+                return 0; // not matching id, return false
+        }
+        return 1; // id matched! obv don't need to update
+    }
+    return 0;
 }

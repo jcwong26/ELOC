@@ -10,10 +10,14 @@
 
 static void led_strip_hsv2rgb(uint32_t h, uint32_t s, uint32_t v, uint32_t *r, uint32_t *g, uint32_t *b);
 void init_ring_light(void);
-int rainbow_chase_start(int argc, char **argv);
-int rainbow_chase_stop(int argc, char **argv);
+void rainbow_chase_start(void);
+int rainbow_chase_start_comm(int argc, char **argv);
+void rainbow_chase_stop(void);
+int rainbow_chase_stop_comm(int argc, char **argv);
 void rainbow_chase_inf(void *);
+void white_leds(void);
 int set_white_leds(int argc, char **argv);
-int leds_off(int argc, char **argv);
+void leds_off(void);
+int leds_off_comm(int argc, char **argv);
 
 #endif

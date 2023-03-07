@@ -155,7 +155,7 @@ static void register_commands(void)
         .command = "lock_solenoid",
         .help = "Sets solenoid bolt to locked state",
         .hint = NULL,
-        .func = lock_solenoid,
+        .func = lock_solenoid_comm,
         .argtable = NULL,
     };
     esp_err_t ret = esp_console_cmd_register(&lock_solenoid_cmd);
@@ -169,7 +169,7 @@ static void register_commands(void)
         .command = "unlock_solenoid",
         .help = "Sets solenoid bolt to unlocked state",
         .hint = NULL,
-        .func = unlock_solenoid,
+        .func = unlock_solenoid_comm,
         .argtable = NULL,
     };
     ret = esp_console_cmd_register(&unlock_solenoid_cmd);
@@ -177,20 +177,6 @@ static void register_commands(void)
     {
         printf("Error resgistering 'unlock_solenoid' command\n");
     }
-
-    /* Read NFC Tag */
-    // esp_console_cmd_t read_nfc_tag_cmd = {
-    //     .command = "read_nfc_tag",
-    //     .help = "Polls NFC reader to return a detected NFC tag",
-    //     .hint = NULL,
-    //     .func = read_single_nfc_tag,
-    //     .argtable = NULL,
-    // };
-    // ret = esp_console_cmd_register(&read_nfc_tag_cmd);
-    // if (ret != ESP_OK)
-    // {
-    //     printf("Error resgistering 'read_nfc_tag' command\n");
-    // }
 
     /* Set Motor PWM */
     struct arg_int *duty;
@@ -267,7 +253,7 @@ static void register_commands(void)
         .command = "rainbow_chase_start",
         .help = "Start rRainbow chase on ring light",
         .hint = NULL,
-        .func = rainbow_chase_start,
+        .func = rainbow_chase_start_comm,
         .argtable = NULL,
     };
     ret = esp_console_cmd_register(&rainbow_chase_start_cmd);
@@ -281,7 +267,7 @@ static void register_commands(void)
         .command = "rainbow_chase_stop",
         .help = "Stop rainbow chase on ring light",
         .hint = NULL,
-        .func = rainbow_chase_stop,
+        .func = rainbow_chase_stop_comm,
         .argtable = NULL,
     };
     ret = esp_console_cmd_register(&rainbow_chase_stop_cmd);
@@ -309,7 +295,7 @@ static void register_commands(void)
         .command = "leds_off",
         .help = NULL,
         .hint = NULL,
-        .func = leds_off,
+        .func = leds_off_comm,
         .argtable = NULL,
     };
     ret = esp_console_cmd_register(&leds_off_cmd);
@@ -383,7 +369,7 @@ void app_main(void)
     }
 
     /* Turn LEDs off on startup */
-    leds_off(0, NULL);
+    leds_off_comm(0, NULL);
 
     /* NFC Module Task */
     xTaskCreate(read_single_nfc_tag, "read_single_nfc_tag", 4096, NULL, 10, &nfc_module_task_handle);

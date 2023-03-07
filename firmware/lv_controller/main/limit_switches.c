@@ -11,6 +11,11 @@
 int state = 0;
 QueueHandle_t interuptQueue;
 
+int LIM1_state = 1;
+int LIM2_state = 1;
+int LIM3_state = 0; // normally low (i.e. sled is in)
+int LIM4_state = 0; // normally low (i.e. door is closed)
+
 void init_limit_switches(void)
 {
     interuptQueue = xQueueCreate(10, sizeof(int));
@@ -41,14 +46,26 @@ void lim_switch_read(void *params)
         if (xQueueReceive(interuptQueue, &pinNumber, portMAX_DELAY))
         {
             if (pinNumber == LIM1_GPIO)
+            {
                 temp_count = count1++;
+                LIM1_state = gpio_get_level(pinNumber);
+            }
             else if (pinNumber == LIM2_GPIO)
+            {
                 temp_count = count2++;
+                LIM2_state = gpio_get_level(pinNumber);
+            }
             else if (pinNumber == LIM3_GPIO)
+            {
                 temp_count = count3++;
+                LIM3_state = gpio_get_level(pinNumber);
+            }
             else if (pinNumber == LIM4_GPIO)
+            {
                 temp_count = count4++;
-            printf("GPIO %d was pressed %d times. The state is %d\n", pinNumber, temp_count, gpio_get_level(pinNumber));
+                LIM4_state = gpio_get_level(pinNumber);
+            }
+            // printf("GPIO %d was pressed %d times. The state is %d\n", pinNumber, temp_count, gpio_get_level(pinNumber));
         }
     }
 }

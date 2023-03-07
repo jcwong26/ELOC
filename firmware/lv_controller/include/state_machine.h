@@ -8,6 +8,5 @@ int to_charging(void);
 int to_unlocked(void);
 int to_unloading(void);
 int to_empty(void);
-int to_vacant(void);
 
 #endif
