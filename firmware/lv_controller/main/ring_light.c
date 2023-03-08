@@ -163,8 +163,8 @@ void white_leds(void)
     rmt_transmit_config_t tx_config = {
         .loop_count = 0, // no transfer loop
     };
-    ESP_LOGI(TAG, "Setting LEDs to white");
-    printf("Setting LEDs to white");
+    ESP_LOGI(TAG, "Setting LEDs to white\n");
+    printf("Setting LEDs to white\n");
     memset(led_strip_pixels, 255, sizeof(led_strip_pixels));
     // Flush RGB values to LEDs
     ESP_ERROR_CHECK(rmt_transmit(led_chan, led_encoder, led_strip_pixels, sizeof(led_strip_pixels), &tx_config));

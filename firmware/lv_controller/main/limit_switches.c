@@ -13,8 +13,8 @@ QueueHandle_t interuptQueue;
 
 int LIM1_state = 1;
 int LIM2_state = 1;
-int LIM3_state = 0; // normally low (i.e. sled is in)
-int LIM4_state = 0; // normally low (i.e. door is closed)
+int LIM3_state = 1; // normally low (i.e. sled is in)
+int LIM4_state = 1; // normally low (i.e. door is closed)
 
 void init_limit_switches(void)
 {
@@ -65,7 +65,13 @@ void lim_switch_read(void *params)
                 temp_count = count4++;
                 LIM4_state = gpio_get_level(pinNumber);
             }
-            // printf("GPIO %d was pressed %d times. The state is %d\n", pinNumber, temp_count, gpio_get_level(pinNumber));
+            printf("GPIO %d was pressed %d times. The state is %d\n", pinNumber, temp_count, gpio_get_level(pinNumber));
         }
     }
+}
+
+int get_lim_switch_curr_value(int pinNumber)
+{
+
+    return gpio_get_level(pinNumber);
 }

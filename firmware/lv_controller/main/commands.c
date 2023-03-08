@@ -8,6 +8,7 @@
 
 #include "commands.h"
 #include "solenoid.h"
+#include "state_machine.h"
 
 static const char *TAG = "commands";
 
@@ -114,4 +115,29 @@ int disable_motor_output(int argc, char **argv)
     ESP_ERROR_CHECK(gpio_set_level(DI_GPIO, 1));
     printf("Disabling motor output...\n");
     return 0;
+}
+
+int to_loading_comm(int argc, char **argv)
+{
+    return to_loading();
+}
+int to_closed_comm(int argc, char **argv)
+{
+    return to_closed();
+}
+int to_charging_comm(int argc, char **argv)
+{
+    return to_charging();
+}
+int to_unlocked_comm(int argc, char **argv)
+{
+    return to_unlocked();
+}
+int to_unloading_comm(int argc, char **argv)
+{
+    return to_unloading();
+}
+int to_empty_comm(int argc, char **argv)
+{
+    return to_empty();
 }

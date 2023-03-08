@@ -12,12 +12,12 @@
 #include "limit_switches.h"
 #include "ring_light.h"
 #include "solenoid.h"
-#include "commands.h"
 
 enum states
 {
     Loading,
     Closed,
+    CompVision,
     Charging,
     Unlocked,
     Unloading,
@@ -29,100 +29,38 @@ enum states
 static const char *TAG = "state_machine";
 static enum states curr_state = Vacant;
 
-/*
-    DON'T NEED SWITCH CASE, ALREADY HANDLING COMMAND PARSING THROUGH THE CONSOLE APP
-    -> INSTEAD, MAKE STATE FUNCS CALLABLE FROM CONSOLE
- */
-
-// typedef struct
-// {
-//     char *key;
-//     int val;
-// } lookupstruct_t;
-
-// static lookupstruct_t lookuptable[] = {
-//     {"ToLoading", ToLoading}, {"ToClosed", ToClosed}, {"ToCharging", ToCharging}, {"ToUnlocked", ToUnlocked}, {"ToUnloading", ToUnloading}, {"ToEmpty", ToEmpty}, {"ToVacant", ToVacant}};
-
-// #define NKEYS (sizeof(lookuptable) / sizeof(lookupstruct_t))
-
-// int keyfromstring(char *key)
-// {
-//     for (int i = 0; i < NKEYS; i++)
-//     {
-//         lookupstruct_t *table = &lookuptable[i];
-//         if (strcmp(table->key, key) == 0)
-//             return table->val;
-//     }
-//     return BADKEY;
-// }
-
-// void state_machine(void)
-// {
-//     int ret = 0;
-//     char *command = NULL;
-//     while (1)
-//     {
-//         // wait for usb command
-//         switch (keyfromstring(command))
-//         {
-//         case ToLoading:
-//             ret = loading();
-//             if (ret)
-//                 ESP_LOGE(TAG, "ERROR: Could not transition to loading state...");
-//             break;
-//         case ToClosed:
-//             ret = closed();
-//             if (ret)
-//                 ESP_LOGE(TAG, "ERROR: Could not transition to closed state...");
-//             break;
-//         case ToCharging:
-//             ret = charging();
-//             if (ret)
-//                 ESP_LOGE(TAG, "ERROR: Could not transition to charging state...");
-//             break;
-//         case ToUnlocked:
-//             ret = unlocked();
-//             if (ret)
-//                 ESP_LOGE(TAG, "ERROR: Could not transition to unlocked state...");
-//             break;
-//         case ToUnloading:
-//             ret = unloading();
-//             if (ret)
-//                 ESP_LOGE(TAG, "ERROR: Could not transition to unloading state...");
-//             break;
-//         case ToEmpty:
-//             ret = empty();
-//             if (ret)
-//                 ESP_LOGE(TAG, "ERROR: Could not transition to empty state...");
-//             break;
-//         case ToVacant:
-//             ret = vacant();
-//             if (ret)
-//                 ESP_LOGE(TAG, "ERROR: Could not transition to vacant state...");
-//             break;
-//         case BADKEY: /* handle failed lookup */
-//             ESP_LOGE(TAG, "ERROR: BADKEY detect -> invalid command received...");
-//             break;
-//         default:
-//             break;
-//         }
-//     }
-// }
-
 int to_loading(void)
 {
+    // Unlock door
+    unlock_solenoid();
+
+    // Poll until limit switch is de-pressed for DOOR is OPEN (LIM4)
+    while (!LIM4_state)
+    {
+        LIM4_state = get_lim_switch_curr_value(LIM4_GPIO);
+        vTaskDelay(pdMS_TO_TICKS(100));
+    }
+
+    // Lock door to prevent overheating
+    printf("Locking solenoid...\n");
+    lock_solenoid();
+
     // Move sled out
     sled_out();
 
-    // Poll until limit switch is hit for SLED OUT, then stop the sled (LIM1)
+    printf("Waiting for LIM1 (SLED OUT)...\n");
+    // Poll until limit switch is hit for SLED OUT (LIM1), then stop the sled (LIM1)
     while (LIM1_state)
     {
+        vTaskDelay(pdMS_TO_TICKS(100));
     }
 
+    printf("Stopping sled...\n");
     // Stop sled
     stop_sled();
 
     // Set new state
+    printf("Now in LOADING state!\n");
     curr_state = Loading;
     return 0;
 }
@@ -130,68 +68,94 @@ int to_loading(void)
 int to_closed(void)
 {
     // Move sled in
+    printf("Moving sled in...\n");
     sled_in();
 
     // Poll until limit switch is hit for SLED IN, then stop the sled (LIM3)
     while (LIM3_state)
     {
+        vTaskDelay(pdMS_TO_TICKS(100));
     }
+    printf("Stopping sled...\n");
+    stop_sled();
 
-    // Poll until limit switch is hit for DOOR CLOSED, then stop the sled (LIM4)
+    // Poll until limit switch is hit for DOOR CLOSED
     while (LIM4_state)
     {
+        vTaskDelay(pdMS_TO_TICKS(100));
     }
 
-    // Lock door
-    lock_solenoid();
-
     // Set new state
+    printf("Now in CLOSED state!\n");
     curr_state = Closed;
     return 0;
 }
 
-int to_charging(void)
+int to_compvision(void)
 {
     // Turn LEDs on white for CV
     white_leds();
 
     // Set new state
+    printf("Now in COMPVISION state!\n");
+    curr_state = CompVision;
+    return 0;
+}
+
+int to_charging(void)
+{
+    // Turn on rainbow chase for charging
+    rainbow_chase_start();
+
+    // Set new state
+    printf("Now in CHARGING state!\n");
     curr_state = Charging;
     return 0;
 }
 
 int to_unlocked(void)
 {
+    // Stop rainbow chase
+    rainbow_chase_stop();
+
     // Turn LEDs off
     leds_off();
 
     // Unlock door
     unlock_solenoid();
 
+    // Poll until limit switch is de-pressed for DOOR is OPEN (LIM4)
+    while (!LIM4_state)
+    {
+        LIM4_state = get_lim_switch_curr_value(LIM4_GPIO);
+        vTaskDelay(pdMS_TO_TICKS(100));
+    }
+
+    // Lock solenoid to prevent overheating
+    lock_solenoid();
+
     // Set new state
+    printf("Now in UNLOCKED state!\n");
     curr_state = Unlocked;
     return 0;
 }
 
 int to_unloading(void)
 {
-    // Poll until limit switch is hit for DOOR OPEN (LIM4)
-    while (!LIM4_state)
-    {
-    }
-
     // Move sled out
     sled_out();
 
     // Poll until limit switch is hit for SLED OUT, then stop the sled (LIM1)
     while (LIM1_state)
     {
+        vTaskDelay(pdMS_TO_TICKS(100));
     }
 
     // Stop sled
     stop_sled();
 
     // Set new state
+    printf("Now in UNLOADING state!\n");
     curr_state = Unloading;
     return 0;
 }
@@ -204,14 +168,14 @@ int to_empty(void)
     // Poll until limit switch is hit for SLED IN, then stop the sled (LIM3)
     while (LIM3_state)
     {
+        vTaskDelay(pdMS_TO_TICKS(100));
     }
 
-    // Poll until limit switch is hit for DOOR CLOSED, then stop the sled (LIM4)
-    while (LIM4_state)
-    {
-    }
+    // Stop the sled
+    stop_sled();
 
     // Set new state
+    printf("Now in EMPTY/VACANT state!\n");
     curr_state = Empty;
     return 0;
 }

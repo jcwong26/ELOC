@@ -303,6 +303,91 @@ static void register_commands(void)
     {
         printf("Error resgistering 'leds_off' command\n");
     }
+
+    /* ------------------STATE COMMANDS------------------ */
+    /* to_loading */
+    esp_console_cmd_t to_loading_cmd = {
+        .command = "to_loading",
+        .help = NULL,
+        .hint = NULL,
+        .func = to_loading_comm,
+        .argtable = NULL,
+    };
+    ret = esp_console_cmd_register(&to_loading_cmd);
+    if (ret != ESP_OK)
+    {
+        printf("Error resgistering 'to_loading' state command\n");
+    }
+
+    /* to_loading */
+    esp_console_cmd_t to_closed_cmd = {
+        .command = "to_closed",
+        .help = NULL,
+        .hint = NULL,
+        .func = to_closed_comm,
+        .argtable = NULL,
+    };
+    ret = esp_console_cmd_register(&to_closed_cmd);
+    if (ret != ESP_OK)
+    {
+        printf("Error resgistering 'to_closed' state command\n");
+    }
+
+    /* to_loading */
+    esp_console_cmd_t to_charging_cmd = {
+        .command = "to_charging",
+        .help = NULL,
+        .hint = NULL,
+        .func = to_charging_comm,
+        .argtable = NULL,
+    };
+    ret = esp_console_cmd_register(&to_charging_cmd);
+    if (ret != ESP_OK)
+    {
+        printf("Error resgistering 'to_charging' state command\n");
+    }
+
+    /* to_loading */
+    esp_console_cmd_t to_unlocked_cmd = {
+        .command = "to_unlocked",
+        .help = NULL,
+        .hint = NULL,
+        .func = to_unlocked_comm,
+        .argtable = NULL,
+    };
+    ret = esp_console_cmd_register(&to_unlocked_cmd);
+    if (ret != ESP_OK)
+    {
+        printf("Error resgistering 'to_unlocked' state command\n");
+    }
+
+    /* to_loading */
+    esp_console_cmd_t to_unloading_cmd = {
+        .command = "to_unloading",
+        .help = NULL,
+        .hint = NULL,
+        .func = to_unloading_comm,
+        .argtable = NULL,
+    };
+    ret = esp_console_cmd_register(&to_unloading_cmd);
+    if (ret != ESP_OK)
+    {
+        printf("Error resgistering 'to_unloading' state command\n");
+    }
+
+    /* to_loading */
+    esp_console_cmd_t to_empty_cmd = {
+        .command = "to_empty",
+        .help = NULL,
+        .hint = NULL,
+        .func = to_empty_comm,
+        .argtable = NULL,
+    };
+    ret = esp_console_cmd_register(&to_empty_cmd);
+    if (ret != ESP_OK)
+    {
+        printf("Error resgistering 'to_empty' state command\n");
+    }
 }
 
 void app_main(void)

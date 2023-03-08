@@ -95,13 +95,13 @@ void nfc_state_machine(uint8_t uid[], uint8_t uidLength)
     {
     case Vacant:
         ret = new_tag(uid, uidLength);
-        if (!ret)
+        if (ret)
         {
             ESP_LOGE(TAG, "ERROR: Could not register new tag...");
             break;
         }
         ret = to_loading();
-        if (!ret)
+        if (ret)
         {
             ESP_LOGE(TAG, "ERROR: Could not transistion to loading state...");
             break;
@@ -110,13 +110,13 @@ void nfc_state_machine(uint8_t uid[], uint8_t uidLength)
         break;
     case Load:
         ret = check_tag(uid, uidLength);
-        if (!ret)
+        if (ret)
         {
             ESP_LOGI(TAG, "INFO: Detected unsaved tag...");
             break;
         }
         ret = to_closed();
-        if (!ret)
+        if (ret)
         {
             ESP_LOGE(TAG, "ERROR: Could not transistion to closed state...");
             break;
@@ -125,38 +125,29 @@ void nfc_state_machine(uint8_t uid[], uint8_t uidLength)
         break;
     case Close:
         ret = check_tag(uid, uidLength);
-        if (!ret)
+        if (ret)
         {
             ESP_LOGI(TAG, "INFO: Detected unsaved tag...");
             break;
         }
-        ret = to_charging();
-        if (!ret)
+        ret = to_compvision();
+        if (ret)
         {
-            ESP_LOGE(TAG, "ERROR: Could not transistion to loading state...");
+            ESP_LOGE(TAG, "ERROR: Could not transistion to comp. vision state...");
             break;
         }
         // send msg to BBB that bike is now in and door is closed/locked
         next_state = Unlock;
         break;
-    // case Lock:
-    //     ret = check_tag(uid, uidLength);
-    //     if (!ret)
-    //     {
-    //         ESP_LOGI(TAG, "INFO: Detected unsaved tag...");
-    //         break;
-    //     }
-    //     next_state = Unlock;
-    //     break;
     case Unlock:
         ret = check_tag(uid, uidLength);
-        if (!ret)
+        if (ret)
         {
             ESP_LOGI(TAG, "INFO: Detected unsaved tag...");
             break;
         }
         ret = to_unlocked();
-        if (!ret)
+        if (ret)
         {
             ESP_LOGE(TAG, "ERROR: Could not transistion to unlocked state...");
             break;
@@ -165,13 +156,13 @@ void nfc_state_machine(uint8_t uid[], uint8_t uidLength)
         break;
     case Unload:
         ret = check_tag(uid, uidLength);
-        if (!ret)
+        if (ret)
         {
             ESP_LOGI(TAG, "INFO: Detected unsaved tag...");
             break;
         }
         ret = to_unloading();
-        if (!ret)
+        if (ret)
         {
             ESP_LOGE(TAG, "ERROR: Could not transistion to unloaded state...");
             break;
@@ -180,19 +171,18 @@ void nfc_state_machine(uint8_t uid[], uint8_t uidLength)
         break;
     case Empty:
         ret = check_tag(uid, uidLength);
-        if (!ret)
+        if (ret)
         {
             ESP_LOGI(TAG, "INFO: Detected unsaved tag...");
             break;
         }
         ret = to_empty();
-        if (!ret)
+        if (ret)
         {
             ESP_LOGE(TAG, "ERROR: Could not transistion to empty state...");
             break;
         }
-        memset(curr_uid, '\0', sizeof(curr_uid)); // reset uid
-        curr_uidLength = 0;                       // reset uid length
+        delete_tag();
         next_state = Vacant;
         break;
     default:
@@ -210,9 +200,9 @@ int new_tag(uint8_t uid[], uint8_t uidLength)
             curr_uid[i] = uid[i];
         }
         curr_uidLength = uidLength;
-        return 1;
+        return 0;
     }
-    return 0;
+    return 1;
 }
 
 int check_tag(uint8_t uid[], uint8_t uidLength)
@@ -225,7 +215,13 @@ int check_tag(uint8_t uid[], uint8_t uidLength)
             if (curr_uid[i] != uid[i])
                 return 0; // not matching id, return false
         }
-        return 1; // id matched! obv don't need to update
+        return 0; // id matched! obv don't need to update
     }
-    return 0;
+    return 1;
+}
+
+void delete_tag(void)
+{
+    memset(curr_uid, '\0', sizeof(curr_uid)); // reset uid
+    curr_uidLength = 0;                       // reset uid length
 }

@@ -16,5 +16,6 @@ extern int LIM4_state;
 void init_limit_switches(void);
 static void IRAM_ATTR gpio_interrupt_handler(void *args);
 void lim_switch_read(void *params);
+int get_lim_switch_curr_value(int pinNumber);
 
 #endif
