@@ -65,7 +65,7 @@ void lim_switch_read(void *params)
                 temp_count = count4++;
                 LIM4_state = gpio_get_level(pinNumber);
             }
-            printf("GPIO %d was pressed %d times. The state is %d\n", pinNumber, temp_count, gpio_get_level(pinNumber));
+            // printf("GPIO %d was pressed %d times. The state is %d\n", pinNumber, temp_count, gpio_get_level(pinNumber));
         }
     }
 }

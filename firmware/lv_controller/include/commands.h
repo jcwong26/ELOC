@@ -23,9 +23,14 @@ int set_mtr_dir(int argc, char **argv);
 int enable_motor_output(int argc, char **argv);
 int disable_motor_output(int argc, char **argv);
 
+int sled_out_comm(int argc, char **argv);
+int sled_in_comm(int argc, char **argv);
+int stop_sled_comm(int argc, char **argv);
+
 // State commands
 int to_loading_comm(int argc, char **argv);
 int to_closed_comm(int argc, char **argv);
+int to_compvision_comm(int argc, char **argv);
 int to_charging_comm(int argc, char **argv);
 int to_unlocked_comm(int argc, char **argv);
 int to_unloading_comm(int argc, char **argv);

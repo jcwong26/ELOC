@@ -304,6 +304,48 @@ static void register_commands(void)
         printf("Error resgistering 'leds_off' command\n");
     }
 
+    /* sled_out */
+    esp_console_cmd_t sled_out_cmd = {
+        .command = "sled_out",
+        .help = NULL,
+        .hint = NULL,
+        .func = sled_out_comm,
+        .argtable = NULL,
+    };
+    ret = esp_console_cmd_register(&sled_out_cmd);
+    if (ret != ESP_OK)
+    {
+        printf("Error resgistering 'sled_out' state command\n");
+    }
+
+    /* sled_in */
+    esp_console_cmd_t sled_in_cmd = {
+        .command = "sled_in",
+        .help = NULL,
+        .hint = NULL,
+        .func = sled_in_comm,
+        .argtable = NULL,
+    };
+    ret = esp_console_cmd_register(&sled_in_cmd);
+    if (ret != ESP_OK)
+    {
+        printf("Error resgistering 'sled_in' state command\n");
+    }
+
+    /* stop_sled */
+    esp_console_cmd_t stop_sled_cmd = {
+        .command = "stop_sled",
+        .help = NULL,
+        .hint = NULL,
+        .func = stop_sled_comm,
+        .argtable = NULL,
+    };
+    ret = esp_console_cmd_register(&stop_sled_cmd);
+    if (ret != ESP_OK)
+    {
+        printf("Error resgistering 'stop_sled' state command\n");
+    }
+
     /* ------------------STATE COMMANDS------------------ */
     /* to_loading */
     esp_console_cmd_t to_loading_cmd = {
@@ -319,7 +361,7 @@ static void register_commands(void)
         printf("Error resgistering 'to_loading' state command\n");
     }
 
-    /* to_loading */
+    /* to_closed */
     esp_console_cmd_t to_closed_cmd = {
         .command = "to_closed",
         .help = NULL,
@@ -333,7 +375,21 @@ static void register_commands(void)
         printf("Error resgistering 'to_closed' state command\n");
     }
 
-    /* to_loading */
+    /* to_compvision */
+    esp_console_cmd_t to_compvision_cmd = {
+        .command = "to_compvision",
+        .help = NULL,
+        .hint = NULL,
+        .func = to_compvision_comm,
+        .argtable = NULL,
+    };
+    ret = esp_console_cmd_register(&to_compvision_cmd);
+    if (ret != ESP_OK)
+    {
+        printf("Error resgistering 'to_compvision' state command\n");
+    }
+
+    /* to_charging */
     esp_console_cmd_t to_charging_cmd = {
         .command = "to_charging",
         .help = NULL,
@@ -347,7 +403,7 @@ static void register_commands(void)
         printf("Error resgistering 'to_charging' state command\n");
     }
 
-    /* to_loading */
+    /* to_unlocked */
     esp_console_cmd_t to_unlocked_cmd = {
         .command = "to_unlocked",
         .help = NULL,
@@ -361,7 +417,7 @@ static void register_commands(void)
         printf("Error resgistering 'to_unlocked' state command\n");
     }
 
-    /* to_loading */
+    /* to_unloading */
     esp_console_cmd_t to_unloading_cmd = {
         .command = "to_unloading",
         .help = NULL,
@@ -375,7 +431,7 @@ static void register_commands(void)
         printf("Error resgistering 'to_unloading' state command\n");
     }
 
-    /* to_loading */
+    /* to_empty */
     esp_console_cmd_t to_empty_cmd = {
         .command = "to_empty",
         .help = NULL,

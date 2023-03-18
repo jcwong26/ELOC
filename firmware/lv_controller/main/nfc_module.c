@@ -13,6 +13,7 @@ enum nfc_states
     Vacant,
     Load,
     Close,
+    WaitForBBBFin,
     Unlock,
     Unload,
     Empty
@@ -121,39 +122,60 @@ void nfc_state_machine(uint8_t uid[], uint8_t uidLength)
             ESP_LOGE(TAG, "ERROR: Could not transistion to closed state...");
             break;
         }
-        next_state = Close;
-        break;
-    case Close:
-        ret = check_tag(uid, uidLength);
-        if (ret)
-        {
-            ESP_LOGI(TAG, "INFO: Detected unsaved tag...");
-            break;
-        }
-        ret = to_compvision();
+        // "Close" NFC module state skipped for
+
+        ret = to_compvision(); // send msg to BBB that bike is now in and door is closed/locked
         if (ret)
         {
             ESP_LOGE(TAG, "ERROR: Could not transistion to comp. vision state...");
             break;
         }
-        // send msg to BBB that bike is now in and door is closed/locked
-        next_state = Unlock;
+        // Transition to charging state happens from BBB automatically, no need for NFC input
+
+        next_state = WaitForBBBFin;
         break;
-    case Unlock:
+        // case Close:
+        //     ret = check_tag(uid, uidLength);
+        //     if (ret)
+        //     {
+        //         ESP_LOGI(TAG, "INFO: Detected unsaved tag...");
+        //         break;
+        //     }
+        //     ret = to_compvision();
+        //     if (ret)
+        //     {
+        //         ESP_LOGE(TAG, "ERROR: Could not transistion to comp. vision state...");
+        //         break;
+        //     }
+        //     // Transition to charging state happens from BBB automatically, no need for NFC input
+
+        // next_state = Unlock;
+        // break;
+    case WaitForBBBFin:
         ret = check_tag(uid, uidLength);
         if (ret)
         {
             ESP_LOGI(TAG, "INFO: Detected unsaved tag...");
             break;
         }
-        ret = to_unlocked();
-        if (ret)
-        {
-            ESP_LOGE(TAG, "ERROR: Could not transistion to unlocked state...");
-            break;
-        }
+        printf("WaitForBBBFin_state\n");
         next_state = Unload;
         break;
+    // case Unlock:
+    //     ret = check_tag(uid, uidLength);
+    //     if (ret)
+    //     {
+    //         ESP_LOGI(TAG, "INFO: Detected unsaved tag...");
+    //         break;
+    //     }
+    //     ret = to_unlocked();
+    //     if (ret)
+    //     {
+    //         ESP_LOGE(TAG, "ERROR: Could not transistion to unlocked state...");
+    //         break;
+    //     }
+    //     next_state = Unload;
+    //     break;
     case Unload:
         ret = check_tag(uid, uidLength);
         if (ret)

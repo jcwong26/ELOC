@@ -46,21 +46,22 @@ int to_loading(void)
     lock_solenoid();
 
     // Move sled out
-    sled_out();
+    // sled_out();
 
     printf("Waiting for LIM1 (SLED OUT)...\n");
     // Poll until limit switch is hit for SLED OUT (LIM1), then stop the sled (LIM1)
     while (LIM1_state)
     {
+        LIM1_state = get_lim_switch_curr_value(LIM1_GPIO);
         vTaskDelay(pdMS_TO_TICKS(100));
     }
 
     printf("Stopping sled...\n");
     // Stop sled
-    stop_sled();
+    // stop_sled();
 
     // Set new state
-    printf("Now in LOADING state!\n");
+    printf("LOADING_state\n");
     curr_state = Loading;
     return 0;
 }
@@ -69,24 +70,26 @@ int to_closed(void)
 {
     // Move sled in
     printf("Moving sled in...\n");
-    sled_in();
+    // sled_in();
 
     // Poll until limit switch is hit for SLED IN, then stop the sled (LIM3)
     while (LIM3_state)
     {
+        LIM3_state = get_lim_switch_curr_value(LIM3_GPIO);
         vTaskDelay(pdMS_TO_TICKS(100));
     }
     printf("Stopping sled...\n");
-    stop_sled();
+    // stop_sled();
 
     // Poll until limit switch is hit for DOOR CLOSED
     while (LIM4_state)
     {
+        LIM4_state = get_lim_switch_curr_value(LIM4_GPIO);
         vTaskDelay(pdMS_TO_TICKS(100));
     }
 
     // Set new state
-    printf("Now in CLOSED state!\n");
+    printf("CLOSED_state\n");
     curr_state = Closed;
     return 0;
 }
@@ -97,7 +100,7 @@ int to_compvision(void)
     white_leds();
 
     // Set new state
-    printf("Now in COMPVISION state!\n");
+    printf("COMPVISION_state\n");
     curr_state = CompVision;
     return 0;
 }
@@ -108,7 +111,7 @@ int to_charging(void)
     rainbow_chase_start();
 
     // Set new state
-    printf("Now in CHARGING state!\n");
+    printf("CHARGING_state\n");
     curr_state = Charging;
     return 0;
 }
@@ -135,7 +138,7 @@ int to_unlocked(void)
     lock_solenoid();
 
     // Set new state
-    printf("Now in UNLOCKED state!\n");
+    printf("UNLOCKED_state\n");
     curr_state = Unlocked;
     return 0;
 }
@@ -143,19 +146,20 @@ int to_unlocked(void)
 int to_unloading(void)
 {
     // Move sled out
-    sled_out();
+    // sled_out();
 
     // Poll until limit switch is hit for SLED OUT, then stop the sled (LIM1)
     while (LIM1_state)
     {
+        LIM1_state = get_lim_switch_curr_value(LIM1_GPIO);
         vTaskDelay(pdMS_TO_TICKS(100));
     }
 
     // Stop sled
-    stop_sled();
+    // stop_sled();
 
     // Set new state
-    printf("Now in UNLOADING state!\n");
+    printf("UNLOADING_state\n");
     curr_state = Unloading;
     return 0;
 }
@@ -163,19 +167,27 @@ int to_unloading(void)
 int to_empty(void)
 {
     // Move sled in
-    sled_in();
+    // sled_in();
 
     // Poll until limit switch is hit for SLED IN, then stop the sled (LIM3)
     while (LIM3_state)
     {
+        LIM3_state = get_lim_switch_curr_value(LIM3_GPIO);
         vTaskDelay(pdMS_TO_TICKS(100));
     }
 
     // Stop the sled
-    stop_sled();
+    // stop_sled();
+
+    // Poll until limit switch is pressed for DOOR is CLOSED (LIM4)
+    while (LIM4_state)
+    {
+        LIM4_state = get_lim_switch_curr_value(LIM4_GPIO);
+        vTaskDelay(pdMS_TO_TICKS(100));
+    }
 
     // Set new state
-    printf("Now in EMPTY/VACANT state!\n");
+    printf("EMPTY_state\n");
     curr_state = Empty;
     return 0;
 }

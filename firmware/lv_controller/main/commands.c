@@ -9,6 +9,7 @@
 #include "commands.h"
 #include "solenoid.h"
 #include "state_machine.h"
+#include "motor.h"
 
 static const char *TAG = "commands";
 
@@ -117,6 +118,24 @@ int disable_motor_output(int argc, char **argv)
     return 0;
 }
 
+int sled_out_comm(int argc, char **argv)
+{
+    sled_out();
+    return 0;
+}
+
+int sled_in_comm(int argc, char **argv)
+{
+    sled_in();
+    return 0;
+}
+
+int stop_sled_comm(int argc, char **argv)
+{
+    stop_sled();
+    return 0;
+}
+
 int to_loading_comm(int argc, char **argv)
 {
     return to_loading();
@@ -124,6 +143,10 @@ int to_loading_comm(int argc, char **argv)
 int to_closed_comm(int argc, char **argv)
 {
     return to_closed();
+}
+int to_compvision_comm(int argc, char **argv)
+{
+    return to_compvision();
 }
 int to_charging_comm(int argc, char **argv)
 {

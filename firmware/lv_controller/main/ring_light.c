@@ -97,7 +97,7 @@ void rainbow_chase_start(void)
         printf("Rainbow chase already started");
     }
     go_rainbow_chase = true;
-    xTaskCreate(rainbow_chase_inf, "rainbow_chase_inf", 4096, NULL, 10, &rainbow_chase_task_handle);
+    xTaskCreate(rainbow_chase_inf, "rainbow_chase_inf", 8192, NULL, 1, &rainbow_chase_task_handle);
 }
 
 int rainbow_chase_start_comm(int argc, char **argv)
@@ -132,28 +132,29 @@ void rainbow_chase_inf(void *)
     };
     while (go_rainbow_chase)
     {
-        for (int i = 0; i < 3; i++)
+        // for (int i = 0; i < 3; i++)
+        // {
+        // for (int j = i; j < NUM_LEDS; j += 3)
+        for (int j = 0; j < NUM_LEDS; j++)
         {
-            for (int j = i; j < NUM_LEDS; j += 3)
-            {
-                // Build RGB pixels
-                hue = j * 360 / NUM_LEDS + start_rgb;
-                led_strip_hsv2rgb(hue, 100, 30, &red, &green, &blue);
-                led_strip_pixels[j * 3 + 0] = green;
-                led_strip_pixels[j * 3 + 1] = blue;
-                led_strip_pixels[j * 3 + 2] = red;
-            }
-            // Flush RGB values to LEDs
-            ESP_ERROR_CHECK(rmt_transmit(led_chan, led_encoder, led_strip_pixels, sizeof(led_strip_pixels), &tx_config));
-            vTaskDelay(pdMS_TO_TICKS(LED_CHASE_SPEED_MS));
-            // memset(led_strip_pixels, 0, sizeof(led_strip_pixels));
-            // ESP_ERROR_CHECK(rmt_transmit(led_chan, led_encoder, led_strip_pixels, sizeof(led_strip_pixels), &tx_config));
-            // vTaskDelay(pdMS_TO_TICKS(LED_CHASE_SPEED_MS));
+            // Build RGB pixels
+            hue = j * 360 / NUM_LEDS + start_rgb;
+            led_strip_hsv2rgb(hue, 100, 30, &red, &green, &blue);
+            led_strip_pixels[j * 3 + 0] = green;
+            led_strip_pixels[j * 3 + 1] = blue;
+            led_strip_pixels[j * 3 + 2] = red;
         }
+        // Flush RGB values to LEDs
+        ESP_ERROR_CHECK(rmt_transmit(led_chan, led_encoder, led_strip_pixels, sizeof(led_strip_pixels), &tx_config));
+        vTaskDelay(pdMS_TO_TICKS(LED_CHASE_SPEED_MS));
+        // memset(led_strip_pixels, 0, sizeof(led_strip_pixels));
+        // ESP_ERROR_CHECK(rmt_transmit(led_chan, led_encoder, led_strip_pixels, sizeof(led_strip_pixels), &tx_config));
+        // vTaskDelay(pdMS_TO_TICKS(LED_CHASE_SPEED_MS));
+        // }
 
         memset(led_strip_pixels, 0, sizeof(led_strip_pixels));
         ESP_ERROR_CHECK(rmt_transmit(led_chan, led_encoder, led_strip_pixels, sizeof(led_strip_pixels), &tx_config));
-        start_rgb += 60;
+        start_rgb += 20;
     }
     vTaskDelete(NULL);
 }
