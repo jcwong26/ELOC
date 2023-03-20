@@ -6,10 +6,10 @@
 
 // Inverter Definitions
 #define MAX_INV_CURRENT_AMPS 8.0        // TODO: Change this to something higher once it all works
-#define DEFAULT_SW_FREQ 100E3       // Default 100 kHz Switching Freq
+#define DEFAULT_SW_FREQ 50E3       // Default 100 kHz Switching Freq
 #define MAX_SW_FREQ 500E3
 
-#define CHARGING_SW_FREQ 250E3      // Figure this out
+#define CHARGING_SW_FREQ 49E3      // Figure this out
 
 
 //      Inverter Timer
