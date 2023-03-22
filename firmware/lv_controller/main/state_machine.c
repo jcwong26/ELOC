@@ -46,7 +46,7 @@ int to_loading(void)
     lock_solenoid();
 
     // Move sled out
-    // sled_out();
+    sled_out();
 
     printf("Waiting for LIM1 (SLED OUT)...\n");
     // Poll until limit switch is hit for SLED OUT (LIM1), then stop the sled (LIM1)
@@ -58,7 +58,7 @@ int to_loading(void)
 
     printf("Stopping sled...\n");
     // Stop sled
-    // stop_sled();
+    stop_sled();
 
     // Set new state
     printf("LOADING_state\n");
@@ -70,7 +70,7 @@ int to_closed(void)
 {
     // Move sled in
     printf("Moving sled in...\n");
-    // sled_in();
+    sled_in();
 
     // Poll until limit switch is hit for SLED IN, then stop the sled (LIM3)
     while (LIM3_state)
@@ -79,7 +79,7 @@ int to_closed(void)
         vTaskDelay(pdMS_TO_TICKS(100));
     }
     printf("Stopping sled...\n");
-    // stop_sled();
+    stop_sled();
 
     // Poll until limit switch is hit for DOOR CLOSED
     while (LIM4_state)
@@ -146,7 +146,7 @@ int to_unlocked(void)
 int to_unloading(void)
 {
     // Move sled out
-    // sled_out();
+    sled_out();
 
     // Poll until limit switch is hit for SLED OUT, then stop the sled (LIM1)
     while (LIM1_state)
@@ -156,7 +156,7 @@ int to_unloading(void)
     }
 
     // Stop sled
-    // stop_sled();
+    stop_sled();
 
     // Set new state
     printf("UNLOADING_state\n");
@@ -167,7 +167,7 @@ int to_unloading(void)
 int to_empty(void)
 {
     // Move sled in
-    // sled_in();
+    sled_in();
 
     // Poll until limit switch is hit for SLED IN, then stop the sled (LIM3)
     while (LIM3_state)
@@ -177,7 +177,7 @@ int to_empty(void)
     }
 
     // Stop the sled
-    // stop_sled();
+    stop_sled();
 
     // Poll until limit switch is pressed for DOOR is CLOSED (LIM4)
     while (LIM4_state)

@@ -5,7 +5,7 @@
 
 #define MTR_FWD 1
 #define MTR_REV 0
-#define STD_DUTY_CYCLE 50
+#define STD_DUTY_CYCLE 80
 
 void sled_out(void)
 {
@@ -27,7 +27,7 @@ void sled_out(void)
 void sled_in(void)
 {
     ESP_ERROR_CHECK(gpio_set_level(DIR_GPIO, MTR_REV));
-    printf("Set motor direction to Forward (1)\n");
+    printf("Set motor direction to Reverse (0)\n");
 
     // Set duty cycle for PWM
     ESP_ERROR_CHECK(ledc_set_duty(LEDC_MODE, LEDC_CHANNEL, calc_bits_from_duty(STD_DUTY_CYCLE)));
