@@ -76,6 +76,7 @@ int to_closed(void)
     sled_in();
 
     // Poll until limit switch is hit for SLED IN, then stop the sled (LIM3)
+    LIM3_state = get_lim_switch_curr_value(LIM3_GPIO);
     while (LIM3_state)
     {
         LIM3_state = get_lim_switch_curr_value(LIM3_GPIO);
@@ -85,6 +86,7 @@ int to_closed(void)
     stop_sled();
 
     // Poll until limit switch is hit for DOOR CLOSED
+    LIM4_state = get_lim_switch_curr_value(LIM4_GPIO);
     while (LIM4_state)
     {
         LIM4_state = get_lim_switch_curr_value(LIM4_GPIO);
@@ -101,6 +103,7 @@ int to_compvision(void)
 {
     // Turn off heartbeat from loading
     heartbeat_stop();
+    vTaskDelay(pdMS_TO_TICKS(100)); // give the ring light some time to settle
 
     // Turn LEDs on white for CV
     white_leds();
@@ -137,6 +140,7 @@ int to_unlocked(void)
     unlock_solenoid();
 
     // Poll until limit switch is de-pressed for DOOR is OPEN (LIM4)
+    LIM4_state = get_lim_switch_curr_value(LIM4_GPIO);
     while (!LIM4_state)
     {
         LIM4_state = get_lim_switch_curr_value(LIM4_GPIO);
@@ -158,6 +162,7 @@ int to_unloading(void)
     sled_out();
 
     // Poll until limit switch is hit for SLED OUT, then stop the sled (LIM1)
+    LIM1_state = get_lim_switch_curr_value(LIM1_GPIO);
     while (LIM1_state)
     {
         LIM1_state = get_lim_switch_curr_value(LIM1_GPIO);
@@ -179,6 +184,7 @@ int to_empty(void)
     sled_in();
 
     // Poll until limit switch is hit for SLED IN, then stop the sled (LIM3)
+    LIM3_state = get_lim_switch_curr_value(LIM3_GPIO);
     while (LIM3_state)
     {
         LIM3_state = get_lim_switch_curr_value(LIM3_GPIO);
@@ -189,6 +195,7 @@ int to_empty(void)
     stop_sled();
 
     // Poll until limit switch is pressed for DOOR is CLOSED (LIM4)
+    LIM4_state = get_lim_switch_curr_value(LIM4_GPIO);
     while (LIM4_state)
     {
         LIM4_state = get_lim_switch_curr_value(LIM4_GPIO);

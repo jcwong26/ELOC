@@ -66,6 +66,7 @@ void lim_switch_read(void *params)
                 LIM4_state = gpio_get_level(pinNumber);
             }
             // printf("GPIO %d was pressed %d times. The state is %d\n", pinNumber, temp_count, gpio_get_level(pinNumber));
+            vTaskDelay(pdMS_TO_TICKS(100)); // 100 ms sleep for other tasks
         }
     }
 }

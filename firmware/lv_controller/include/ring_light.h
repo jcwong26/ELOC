@@ -7,7 +7,7 @@
 
 #define NUM_LEDS 24
 #define LED_CHASE_SPEED_MS 35
-#define LED_HEARTBEAT_SPEED_MS 100
+#define LED_HEARTBEAT_SPEED_MS 50
 
 static void led_strip_hsv2rgb(uint32_t h, uint32_t s, uint32_t v, uint32_t *r, uint32_t *g, uint32_t *b);
 void init_ring_light(void);

@@ -198,7 +198,9 @@ void heartbeat_leds(void)
     // hardcode hue for blue
     uint16_t hue = 40;
     uint16_t val = 0;
-    uint16_t MAX_VAL = 100;
+    // hardcode max val value and the number of heartbeat increments (one direction)
+    uint16_t MAX_VAL = 40;
+    uint16_t NUM_INCREMENTS = 40;
 
     ESP_LOGI(TAG, "Starting heartbeat...");
     printf("Starting heartbeat...");
@@ -207,22 +209,46 @@ void heartbeat_leds(void)
     };
     while (go_heartbeat)
     {
-        for (int j = 0; j < NUM_LEDS; j++)
+        for (int i = 0; i < NUM_INCREMENTS; i++)
         {
-            // Build RGB pixels from val (intensity)
-            val = j * MAX_VAL / NUM_LEDS;
-            led_strip_hsv2rgb(hue, 100, val, &red, &green, &blue);
-            led_strip_pixels[j * 3 + 0] = green;
-            led_strip_pixels[j * 3 + 1] = blue;
-            led_strip_pixels[j * 3 + 2] = red;
-        }
-        // Flush RGB values to LEDs
-        ESP_ERROR_CHECK(rmt_transmit(led_chan, led_encoder, led_strip_pixels, sizeof(led_strip_pixels), &tx_config));
-        vTaskDelay(pdMS_TO_TICKS(LED_HEARTBEAT_SPEED_MS));
+            val = i * MAX_VAL / NUM_INCREMENTS;
+            for (int j = 0; j < NUM_LEDS; j++)
+            {
+                // Build RGB pixels from val (intensity)
+                led_strip_hsv2rgb(hue, 100, val, &red, &green, &blue);
+                led_strip_pixels[j * 3 + 0] = green;
+                led_strip_pixels[j * 3 + 1] = blue;
+                led_strip_pixels[j * 3 + 2] = red;
+            }
+            // Flush RGB values to LEDs
+            ESP_ERROR_CHECK(rmt_transmit(led_chan, led_encoder, led_strip_pixels, sizeof(led_strip_pixels), &tx_config));
+            vTaskDelay(pdMS_TO_TICKS(LED_HEARTBEAT_SPEED_MS));
 
-        // memset(led_strip_pixels, 0, sizeof(led_strip_pixels));
-        // ESP_ERROR_CHECK(rmt_transmit(led_chan, led_encoder, led_strip_pixels, sizeof(led_strip_pixels), &tx_config));
+            if (!go_heartbeat)
+                break;
+        }
+
+        for (int i = NUM_INCREMENTS - 1; i >= 0; i--)
+        {
+            val = i * MAX_VAL / NUM_INCREMENTS;
+            for (int j = 0; j < NUM_LEDS; j++)
+            {
+                // Build RGB pixels from val (intensity)
+                led_strip_hsv2rgb(hue, 100, val, &red, &green, &blue);
+                led_strip_pixels[j * 3 + 0] = green;
+                led_strip_pixels[j * 3 + 1] = blue;
+                led_strip_pixels[j * 3 + 2] = red;
+            }
+            // Flush RGB values to LEDs
+            ESP_ERROR_CHECK(rmt_transmit(led_chan, led_encoder, led_strip_pixels, sizeof(led_strip_pixels), &tx_config));
+            vTaskDelay(pdMS_TO_TICKS(LED_HEARTBEAT_SPEED_MS));
+
+            if (!go_heartbeat)
+                break;
+        }
     }
+    memset(led_strip_pixels, 0, sizeof(led_strip_pixels));
+    ESP_ERROR_CHECK(rmt_transmit(led_chan, led_encoder, led_strip_pixels, sizeof(led_strip_pixels), &tx_config));
     vTaskDelete(NULL);
 }
 
