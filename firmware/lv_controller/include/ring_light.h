@@ -7,6 +7,7 @@
 
 #define NUM_LEDS 24
 #define LED_CHASE_SPEED_MS 35
+#define LED_HEARTBEAT_SPEED_MS 100
 
 static void led_strip_hsv2rgb(uint32_t h, uint32_t s, uint32_t v, uint32_t *r, uint32_t *g, uint32_t *b);
 void init_ring_light(void);
@@ -19,5 +20,10 @@ void white_leds(void);
 int set_white_leds(int argc, char **argv);
 void leds_off(void);
 int leds_off_comm(int argc, char **argv);
+void heartbeat_leds(void);
+void heartbeat_start(void);
+int heartbeat_start_comm(int argc, char **argv);
+void heartbeat_stop(void);
+int heartbeat_stop_comm(int argc, char **argv);
 
 #endif

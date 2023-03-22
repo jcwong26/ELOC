@@ -13,7 +13,9 @@ static uint8_t led_strip_pixels[NUM_LEDS * 3];
 static rmt_channel_handle_t led_chan = NULL;
 static rmt_encoder_handle_t led_encoder = NULL;
 static TaskHandle_t rainbow_chase_task_handle = NULL;
+static TaskHandle_t heartbeat_task_handle = NULL;
 static bool go_rainbow_chase = false;
+static bool go_heartbeat = false;
 
 static void led_strip_hsv2rgb(uint32_t h, uint32_t s, uint32_t v, uint32_t *r, uint32_t *g, uint32_t *b)
 {
@@ -132,9 +134,6 @@ void rainbow_chase_inf(void *)
     };
     while (go_rainbow_chase)
     {
-        // for (int i = 0; i < 3; i++)
-        // {
-        // for (int j = i; j < NUM_LEDS; j += 3)
         for (int j = 0; j < NUM_LEDS; j++)
         {
             // Build RGB pixels
@@ -147,10 +146,6 @@ void rainbow_chase_inf(void *)
         // Flush RGB values to LEDs
         ESP_ERROR_CHECK(rmt_transmit(led_chan, led_encoder, led_strip_pixels, sizeof(led_strip_pixels), &tx_config));
         vTaskDelay(pdMS_TO_TICKS(LED_CHASE_SPEED_MS));
-        // memset(led_strip_pixels, 0, sizeof(led_strip_pixels));
-        // ESP_ERROR_CHECK(rmt_transmit(led_chan, led_encoder, led_strip_pixels, sizeof(led_strip_pixels), &tx_config));
-        // vTaskDelay(pdMS_TO_TICKS(LED_CHASE_SPEED_MS));
-        // }
 
         memset(led_strip_pixels, 0, sizeof(led_strip_pixels));
         ESP_ERROR_CHECK(rmt_transmit(led_chan, led_encoder, led_strip_pixels, sizeof(led_strip_pixels), &tx_config));
@@ -192,5 +187,70 @@ void leds_off(void)
 int leds_off_comm(int argc, char **argv)
 {
     leds_off();
+    return 0;
+}
+
+void heartbeat_leds(void)
+{
+    uint32_t red = 0;
+    uint32_t green = 0;
+    uint32_t blue = 0;
+    // hardcode hue for blue
+    uint16_t hue = 40;
+    uint16_t val = 0;
+    uint16_t MAX_VAL = 100;
+
+    ESP_LOGI(TAG, "Starting heartbeat...");
+    printf("Starting heartbeat...");
+    rmt_transmit_config_t tx_config = {
+        .loop_count = 0, // no transfer loop
+    };
+    while (go_heartbeat)
+    {
+        for (int j = 0; j < NUM_LEDS; j++)
+        {
+            // Build RGB pixels from val (intensity)
+            val = j * MAX_VAL / NUM_LEDS;
+            led_strip_hsv2rgb(hue, 100, val, &red, &green, &blue);
+            led_strip_pixels[j * 3 + 0] = green;
+            led_strip_pixels[j * 3 + 1] = blue;
+            led_strip_pixels[j * 3 + 2] = red;
+        }
+        // Flush RGB values to LEDs
+        ESP_ERROR_CHECK(rmt_transmit(led_chan, led_encoder, led_strip_pixels, sizeof(led_strip_pixels), &tx_config));
+        vTaskDelay(pdMS_TO_TICKS(LED_HEARTBEAT_SPEED_MS));
+
+        // memset(led_strip_pixels, 0, sizeof(led_strip_pixels));
+        // ESP_ERROR_CHECK(rmt_transmit(led_chan, led_encoder, led_strip_pixels, sizeof(led_strip_pixels), &tx_config));
+    }
+    vTaskDelete(NULL);
+}
+
+void heartbeat_start(void)
+{
+    if (go_heartbeat)
+    {
+        // heartbeat already started, do nothing
+        ESP_LOGI(TAG, "Heartbeat already started");
+        printf("Heartbeat already started");
+    }
+    go_heartbeat = true;
+    xTaskCreate(heartbeat_leds, "heartbeat_leds", 8192, NULL, 1, &heartbeat_task_handle);
+}
+
+int heartbeat_start_comm(int argc, char **argv)
+{
+    heartbeat_start();
+    return 0;
+}
+
+void heartbeat_stop(void)
+{
+    go_heartbeat = false;
+}
+
+int heartbeat_stop_comm(int argc, char **argv)
+{
+    heartbeat_stop();
     return 0;
 }

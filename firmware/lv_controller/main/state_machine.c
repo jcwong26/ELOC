@@ -45,6 +45,9 @@ int to_loading(void)
     printf("Locking solenoid...\n");
     lock_solenoid();
 
+    // Start a heartbeat on the ring light for loading
+    heartbeat_start();
+
     // Move sled out
     sled_out();
 
@@ -96,6 +99,9 @@ int to_closed(void)
 
 int to_compvision(void)
 {
+    // Turn off heartbeat from loading
+    heartbeat_stop();
+
     // Turn LEDs on white for CV
     white_leds();
 
@@ -123,6 +129,9 @@ int to_unlocked(void)
 
     // Turn LEDs off
     leds_off();
+
+    // Start a heartbeat on the ring light for unloading
+    heartbeat_start();
 
     // Unlock door
     unlock_solenoid();
@@ -185,6 +194,9 @@ int to_empty(void)
         LIM4_state = get_lim_switch_curr_value(LIM4_GPIO);
         vTaskDelay(pdMS_TO_TICKS(100));
     }
+
+    // Turn off heartbeat from unloading
+    heartbeat_stop();
 
     // Set new state
     printf("EMPTY_state\n");

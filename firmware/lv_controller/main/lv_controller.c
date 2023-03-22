@@ -346,6 +346,34 @@ static void register_commands(void)
         printf("Error resgistering 'stop_sled' state command\n");
     }
 
+    /* Start Heartbeat on Ring Light */
+    esp_console_cmd_t heartbeat_start_cmd = {
+        .command = "heartbeat_start",
+        .help = NULL,
+        .hint = NULL,
+        .func = heartbeat_start_comm,
+        .argtable = NULL,
+    };
+    ret = esp_console_cmd_register(&heartbeat_start_cmd);
+    if (ret != ESP_OK)
+    {
+        printf("Error resgistering 'heartbeat_start' command\n");
+    }
+
+    /* Stop Heartbeat on Ring Light */
+    esp_console_cmd_t heartbeat_stop_cmd = {
+        .command = "heartbeat_stop",
+        .help = NULL,
+        .hint = NULL,
+        .func = heartbeat_stop_comm,
+        .argtable = NULL,
+    };
+    ret = esp_console_cmd_register(&heartbeat_stop_cmd);
+    if (ret != ESP_OK)
+    {
+        printf("Error resgistering 'heartbeat_stop' command\n");
+    }
+
     /* ------------------STATE COMMANDS------------------ */
     /* to_loading */
     esp_console_cmd_t to_loading_cmd = {
