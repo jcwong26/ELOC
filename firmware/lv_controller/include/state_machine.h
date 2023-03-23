@@ -1,7 +1,7 @@
 #ifndef STATE_MACHINE_H
 #define STATE_MACHINE_H
 
-// void state_machine(void);
+int to_unlockedem(void);
 int to_loading(void);
 int to_closed(void);
 int to_compvision(void);

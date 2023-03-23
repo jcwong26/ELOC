@@ -15,6 +15,7 @@
 
 enum states
 {
+    UnlockedEm,
     Loading,
     Closed,
     CompVision,
@@ -29,25 +30,34 @@ enum states
 static const char *TAG = "state_machine";
 static enum states curr_state = Vacant;
 
-int to_loading(void)
+int to_unlockedem(void)
 {
+    // Start a heartbeat on the ring light in prep for loading
+    heartbeat_start();
+
     // Unlock door
     unlock_solenoid();
 
     // Poll until limit switch is de-pressed for DOOR is OPEN (LIM4)
+    LIM4_state = get_lim_switch_curr_value(LIM4_GPIO);
     while (!LIM4_state)
     {
         LIM4_state = get_lim_switch_curr_value(LIM4_GPIO);
         vTaskDelay(pdMS_TO_TICKS(100));
     }
 
-    // Lock door to prevent overheating
+    // Lock solenoid to prevent overheating
     printf("Locking solenoid...\n");
     lock_solenoid();
 
-    // Start a heartbeat on the ring light for loading
-    heartbeat_start();
+    // Set new state
+    printf("UNLOCKEDEM_state\n");
+    curr_state = UnlockedEm;
+    return 0;
+}
 
+int to_loading(void)
+{
     // Move sled out
     sled_out();
 

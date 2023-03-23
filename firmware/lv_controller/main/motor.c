@@ -5,7 +5,7 @@
 
 #define MTR_FWD 1
 #define MTR_REV 0
-#define STD_DUTY_CYCLE 80
+#define STD_DUTY_CYCLE 100
 
 void sled_out(void)
 {

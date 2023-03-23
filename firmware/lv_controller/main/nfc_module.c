@@ -11,6 +11,7 @@
 enum nfc_states
 {
     Vacant,
+    UnlockEm,
     Load,
     Close,
     WaitForBBBFin,
@@ -99,6 +100,21 @@ void nfc_state_machine(uint8_t uid[], uint8_t uidLength)
         if (ret)
         {
             ESP_LOGE(TAG, "ERROR: Could not register new tag...");
+            break;
+        }
+        ret = to_unlockedem();
+        if (ret)
+        {
+            ESP_LOGE(TAG, "ERROR: Could not transistion to unlocked (empty) state...");
+            break;
+        }
+        next_state = UnlockEm;
+        break;
+    case UnlockEm:
+        ret = check_tag(uid, uidLength);
+        if (ret)
+        {
+            ESP_LOGI(TAG, "INFO: Detected unsaved tag...");
             break;
         }
         ret = to_loading();

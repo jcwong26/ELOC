@@ -136,6 +136,11 @@ int stop_sled_comm(int argc, char **argv)
     return 0;
 }
 
+int to_unlockedem_comm(int argc, char **argv)
+{
+    return to_unlockedem();
+}
+
 int to_loading_comm(int argc, char **argv)
 {
     return to_loading();

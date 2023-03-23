@@ -28,6 +28,7 @@ int sled_in_comm(int argc, char **argv);
 int stop_sled_comm(int argc, char **argv);
 
 // State commands
+int to_unlockedem_comm(int argc, char **argv);
 int to_loading_comm(int argc, char **argv);
 int to_closed_comm(int argc, char **argv);
 int to_compvision_comm(int argc, char **argv);

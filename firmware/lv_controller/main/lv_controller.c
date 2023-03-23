@@ -375,6 +375,20 @@ static void register_commands(void)
     }
 
     /* ------------------STATE COMMANDS------------------ */
+    /* to_unlockedem */
+    esp_console_cmd_t to_unlockedem_cmd = {
+        .command = "to_unlockedem",
+        .help = NULL,
+        .hint = NULL,
+        .func = to_unlockedem_comm,
+        .argtable = NULL,
+    };
+    ret = esp_console_cmd_register(&to_unlockedem_cmd);
+    if (ret != ESP_OK)
+    {
+        printf("Error resgistering 'to_unlockedem' state command\n");
+    }
+
     /* to_loading */
     esp_console_cmd_t to_loading_cmd = {
         .command = "to_loading",
