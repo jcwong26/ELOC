@@ -73,7 +73,7 @@ class GantryControl():
 
     def move_arm(self, z_deg):
         z_mm = z_deg/10.0
-        self.command("G0 Y{} F200\r\n".format(z_mm))
+        self.command("G0 Y{} F100\r\n".format(z_mm))
         self.disable_steppers()
 
     # Sets the current position to (0, 0, 0)
@@ -84,7 +84,7 @@ class GantryControl():
         self.command("G28 X Z\r\n")
 
     def auto_home_arm(self):
-        self.move_arm(-1)
+        self.move_arm(-90)
         self.disable_steppers()
         self.command("G92 Y0\r\n")
     
@@ -92,15 +92,10 @@ class GantryControl():
         self.command("M18\r\n")
 
 # Test Code
-gantry = GantryControl('COM5')
+gantry = GantryControl('/dev/tty/USB0')
 time.sleep(2)
-gantry.set_speed(500)
-gantry.set_origin()
+gantry.auto_home_arm()
+gantry.auto_home_xz()
 
-for i in range(3):
-    gantry.move_xz(x_mm=9) # about 90 degrees
-    time.sleep(1)
-    gantry.move_xz(x_mm=0)
-    time.sleep(1)
 
 gantry.ser.close()
