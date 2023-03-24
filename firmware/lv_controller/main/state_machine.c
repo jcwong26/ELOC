@@ -63,6 +63,7 @@ int to_loading(void)
 
     printf("Waiting for LIM1 (SLED OUT)...\n");
     // Poll until limit switch is hit for SLED OUT (LIM1), then stop the sled (LIM1)
+    LIM1_state = get_lim_switch_curr_value(LIM1_GPIO);
     while (LIM1_state)
     {
         LIM1_state = get_lim_switch_curr_value(LIM1_GPIO);

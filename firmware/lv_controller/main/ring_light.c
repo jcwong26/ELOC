@@ -138,7 +138,7 @@ void rainbow_chase_inf(void *)
         {
             // Build RGB pixels
             hue = j * 360 / NUM_LEDS + start_rgb;
-            led_strip_hsv2rgb(hue, 100, 30, &red, &green, &blue);
+            led_strip_hsv2rgb(hue, 100, 20, &red, &green, &blue);
             led_strip_pixels[j * 3 + 0] = green;
             led_strip_pixels[j * 3 + 1] = blue;
             led_strip_pixels[j * 3 + 2] = red;
@@ -156,12 +156,27 @@ void rainbow_chase_inf(void *)
 
 void white_leds(void)
 {
+    uint32_t red = 0;
+    uint32_t green = 0;
+    uint32_t blue = 0;
     rmt_transmit_config_t tx_config = {
         .loop_count = 0, // no transfer loop
     };
     ESP_LOGI(TAG, "Setting LEDs to white\n");
     printf("Setting LEDs to white\n");
-    memset(led_strip_pixels, 255, sizeof(led_strip_pixels));
+    for (int j = 0; j < NUM_LEDS; j++)
+    {
+        // Build RGB pixels
+        led_strip_hsv2rgb(255, 0, 20, &red, &green, &blue);
+        led_strip_pixels[j * 3 + 0] = green;
+        led_strip_pixels[j * 3 + 1] = blue;
+        led_strip_pixels[j * 3 + 2] = red;
+    }
+    // Flush RGB values to LEDs
+    ESP_ERROR_CHECK(rmt_transmit(led_chan, led_encoder, led_strip_pixels, sizeof(led_strip_pixels), &tx_config));
+    vTaskDelay(pdMS_TO_TICKS(LED_CHASE_SPEED_MS));
+
+    // memset(led_strip_pixels, 255, sizeof(led_strip_pixels));
     // Flush RGB values to LEDs
     ESP_ERROR_CHECK(rmt_transmit(led_chan, led_encoder, led_strip_pixels, sizeof(led_strip_pixels), &tx_config));
 }
@@ -199,8 +214,8 @@ void heartbeat_leds(void)
     uint16_t hue = 40;
     uint16_t val = 0;
     // hardcode max val value and the number of heartbeat increments (one direction)
-    uint16_t MAX_VAL = 40;
-    uint16_t NUM_INCREMENTS = 40;
+    uint16_t MAX_VAL = 20;
+    uint16_t NUM_INCREMENTS = 20;
 
     ESP_LOGI(TAG, "Starting heartbeat...");
     printf("Starting heartbeat...");
@@ -209,7 +224,7 @@ void heartbeat_leds(void)
     };
     while (go_heartbeat)
     {
-        for (int i = 0; i < NUM_INCREMENTS; i++)
+        for (int i = 2; i < NUM_INCREMENTS; i++)
         {
             val = i * MAX_VAL / NUM_INCREMENTS;
             for (int j = 0; j < NUM_LEDS; j++)
@@ -228,7 +243,7 @@ void heartbeat_leds(void)
                 break;
         }
 
-        for (int i = NUM_INCREMENTS - 1; i >= 0; i--)
+        for (int i = NUM_INCREMENTS - 1; i >= 2; i--)
         {
             val = i * MAX_VAL / NUM_INCREMENTS;
             for (int j = 0; j < NUM_LEDS; j++)
