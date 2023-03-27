@@ -68,12 +68,15 @@ class GantryControl():
         self.command("G0 F{}\r\n".format(speed_mm_min))
 
     # Move in the XY plane (mm)
-    def move_xz(self, x_mm=0, y_mm=0):
-        self.command("G0 X{} Z{} F1200\r\n".format(x_mm, y_mm))
+    def move_xz(self, x_mm=0, z_mm=0):
+        self.command("G0 X{} Z{} F1500\r\n".format(x_mm, z_mm))
 
-    def move_arm(self, z_deg):
-        z_mm = z_deg/10.0
-        self.command("G0 Y{} F100\r\n".format(z_mm))
+    def move_x(self, x_mm):
+        self.command("G0 X{} F1500\r\n".format(x_mm))
+
+    def move_arm(self, y_deg):
+        y_mm = y_deg/10.0
+        self.command("G0 Y{} F100\r\n".format(y_mm))
         self.disable_steppers()
 
     # Sets the current position to (0, 0, 0)
@@ -84,7 +87,7 @@ class GantryControl():
         self.command("G28 X Z\r\n")
 
     def auto_home_arm(self):
-        self.move_arm(-90)
+        self.move_arm(-40)
         self.disable_steppers()
         self.command("G92 Y0\r\n")
     
@@ -92,10 +95,10 @@ class GantryControl():
         self.command("M18\r\n")
 
 # Test Code
-gantry = GantryControl('/dev/tty/USB0')
-time.sleep(2)
-gantry.auto_home_arm()
-gantry.auto_home_xz()
+# gantry = GantryControl('/dev/tty/USB0')
+# time.sleep(2)
+# gantry.auto_home_arm()
+# gantry.auto_home_xz()
 
 
-gantry.ser.close()
+# gantry.ser.close()
