@@ -2,9 +2,9 @@
 
 import cv2
 
-camera = cv2.VideoCapture(1)
+camera = cv2.VideoCapture(1, cv2.CAP_DSHOW) # external webcam
 img_counter = 0
-folder_name = "webcam_calibration_images"
+
 while True:
     ret, frame = camera.read()
     if not ret:
